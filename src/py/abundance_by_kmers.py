@@ -329,16 +329,22 @@ def output_inverted_index(kmer_ii, output_filename = 'tmp.ii', threads = 8):
     unique_output_file.close()
     ambiguous_output_file.close()
 
-    call_arr = ['sort', '-T', './', '--parallel=' + str(threads), output_filename + '.unique', '-o', output_filename + '.unique.sorted']
-    subprocess.call(call_arr)
-
-    call_arr = ['sort', '-T', './', '--parallel=' + str(threads), output_filename + '.ambig', '-o', output_filename + '.ambig.sorted']
-    subprocess.call(call_arr)
-
-    # Output a combined list of inverted kmer indexes.
-    call_arr = ['sort', '-m', '-T', './', '--parallel=' + str(threads), output_filename + '.unique.sorted', output_filename + '.ambig.sorted', '-o', output_filename + '.sorted']
-    subprocess.call(call_arr)
-
+    try:
+        call_arr = ['sort', '-T', './', '--parallel=' + str(threads), output_filename + '.unique', '-o', output_filename + '.unique.sorted']
+        subprocess.check_call(call_arr)
+        call_arr = ['sort', '-T', './', '--parallel=' + str(threads), output_filename + '.ambig', '-o', output_filename + '.ambig.sorted']
+        subprocess.check_call(call_arr)
+        # Output a combined list of inverted kmer indexes.
+        call_arr = ['sort', '-m', '-T', './', '--parallel=' + str(threads), output_filename + '.unique.sorted', output_filename + '.ambig.sorted', '-o', output_filename + '.sorted']
+        subprocess.check_call(call_arr)
+    except:
+        call_arr = ['sort', '-T', './', output_filename + '.unique', '-o', output_filename + '.unique.sorted']
+        subprocess.call(call_arr)
+        call_arr = ['sort', '-T', './', output_filename + '.ambig', '-o', output_filename + '.ambig.sorted']
+        subprocess.call(call_arr)
+        # Output a combined list of inverted kmer indexes.
+        call_arr = ['sort', '-m', '-T', './', output_filename + '.unique.sorted', output_filename + '.ambig.sorted', '-o', output_filename + '.sorted']
+        subprocess.call(call_arr)
 
 
 def join_kmer_lists(kmer_ii_filename = 'tmp.ii', query_kmer_counts_filename = 'tmp.jf.sorted'):
@@ -357,7 +363,7 @@ def join_kmer_lists(kmer_ii_filename = 'tmp.ii', query_kmer_counts_filename = 't
     contig_counts = defaultdict(int)
 
     call_arr = ['join', kmer_ii_filename +'.unique.sorted', query_kmer_counts_filename, '-t', '\t']
-    #print ' '.join(call_arr)
+    print ' '.join(call_arr)
     join_proc = subprocess.Popen(call_arr, stdout = subprocess.PIPE)
 
     for line in join_proc.stdout:
@@ -377,7 +383,7 @@ def join_kmer_lists(kmer_ii_filename = 'tmp.ii', query_kmer_counts_filename = 't
     ambiguous_kmer_counts = defaultdict(int)
 
     call_arr = ['join', kmer_ii_filename +'.ambig.sorted', query_kmer_counts_filename, '-t', '\t']
-    #print ' '.join(call_arr)
+    print ' '.join(call_arr)
     join_proc = subprocess.Popen(call_arr, stdout = subprocess.PIPE)
 
     for line in join_proc.stdout:
@@ -411,13 +417,17 @@ def run_jellyfish(reads_filename, kmer_length = 15, threads = 8, output = 'tmp.j
     call_arr = ['jellyfish', 'dump', '-c', '-t', output + '.tmp', '-o', output]
     subprocess.call(call_arr)
 
-    call_arr = ['sort', '-T', './', '--parallel=' + str(threads), output, '-o', output + '.sorted']
-    #sort_process = subprocess.Popen(['sort', '--parallel=' + str(threads), '-o', output + '.sorted'], stdin = jf_dump.stdout)
-    #jf_dump.communicate()[0]
-    #jf_dump.wait()
-    #sort_process.wait()
+    try:
+        call_arr = ['sort', '-T', './', '--parallel=' + str(threads), output, '-o', output + '.sorted']
+        #sort_process = subprocess.Popen(['sort', '--parallel=' + str(threads), '-o', output + '.sorted'], stdin = jf_dump.stdout)
+        #jf_dump.communicate()[0]
+        #jf_dump.wait()
+        #sort_process.wait()
 
-    subprocess.call(call_arr)
+        subprocess.check_call(call_arr)
+    except:
+        call_arr = ['sort', '-T', './', output, '-o', output + '.sorted']
+        subprocess.check_call(call_arr)
 
     #print "output jf:\t" + str(output) + '.sorted'
 
