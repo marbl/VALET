@@ -3,7 +3,7 @@
 from __future__ import print_function
 from multiprocessing import Process, Lock
 from optparse import OptionParser
-from scipy.interpolate import UnivariateSpline
+#from scipy.interpolate import UnivariateSpline
 import numpy as np
 import scipy.signal
 import collections
@@ -90,7 +90,9 @@ def find_coverage_errors_scipy(mpileup_file, output_location, window_size, abund
             if prev_contig:
                 # Calculate median coverage, and lower/upper hinges.
                 #abundance_dict[prev_contig] = tukey_summary(curr_coverages, window_size)
-                coverage_meds = scipy.signal.medfilt(np.array(curr_coverages), kernel_size = window_size)
+                #coverage_meds = scipy.signal.medfilt(np.array(curr_coverages), kernel_size = window_size)
+                coverages_np = np.asarray(curr_coverages)
+                coverage_meds = np.convolve(coverages_np, np.ones((window_size,))/window_size, mode='full')
 
                 i = 0
                 while i < len(coverage_meds):
@@ -325,11 +327,11 @@ def tukey_summary(orig_array, window_size = 1):
     """ Given an array of integers, return median, and lower/upper hinge tuple. """
 
     #array = []
-    #array = orig_array
-    #array = np.convolve(np.array(array), np.ones(window_size)/window_size, mode='valid')
+    array = orig_array
+    array = np.convolve(np.array(array), np.ones(window_size)/window_size, mode='valid')
     #array = scipy.signal.medfilt(np.array(orig_array), kernel_size = window_size)
-    spline = UnivariateSpline(range(1,len(orig_array)+1), np.array(orig_array))
-    array = spline(range(1,len(orig_array)+1))
+    #spline = UnivariateSpline(range(1,len(orig_array)+1), np.array(orig_array))
+    #array = spline(range(1,len(orig_array)+1))
 
     #s = UnivariateSpline(range(1,len(a)+1),a)
     array.sort()

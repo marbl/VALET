@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 
 #from __future__ import print_function
+from collections import defaultdict
 from multiprocessing import Process, Lock
 from optparse import OptionParser
-from collections import defaultdict
+from sys import platform as _platform
 import collections
 import copy
 import math
@@ -20,8 +21,15 @@ import subprocess
 import tempfile
 
 
+JOIN_PARAM = ['-t', '\t']
+SORT_PARAM = []
+if _platform == "darwin":
+    JOIN_PARAM = []
+    SORT_PARAM = []
+
 PROG_NAME = "ABUN_BY_KMERS"
 
+CLEAN_UP_FILES = []
 
 # http://stackoverflow.com/questions/19570800/reverse-complement-dna
 revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N','R':'N','M':'N','Y':'N','S':'N','W':'N','K':'N'}[B] for B in x][::-1])
@@ -36,6 +44,7 @@ def setup_options():
     parser.add_option("-e", "--error_rate", dest="error_rate", help="error rate (0% by default)", type="float", default=1.0)
     parser.add_option("-m", "--max_iterations", dest="max_iter", help="max iterations (30 by default)", type="int", default=30)
     parser.add_option("-p", "--pileup", dest="pileup_file", help="write pileup to this file.", default=None)
+    parser.add_option("-s", "--save-intermediate-files", dest="save_intermediate_files", help="save all the intermediate files.", action='store_true')
 
     (options,args) = parser.parse_args()
 
@@ -308,6 +317,9 @@ def output_inverted_index(kmer_ii, output_filename = 'tmp.ii', threads = 8):
     unique_output_file = open(output_filename + '.unique', 'w')
     ambiguous_output_file = open(output_filename + '.ambig', 'w')
 
+    CLEAN_UP_FILES.append(unique_output_file.name)
+    CLEAN_UP_FILES.append(ambiguous_output_file.name)
+
     contigs_containing_kmer = None
     for kmer in kmer_ii.keys():
 
@@ -337,14 +349,23 @@ def output_inverted_index(kmer_ii, output_filename = 'tmp.ii', threads = 8):
         # Output a combined list of inverted kmer indexes.
         call_arr = ['sort', '-m', '-T', './', '--parallel=' + str(threads), output_filename + '.unique.sorted', output_filename + '.ambig.sorted', '-o', output_filename + '.sorted']
         subprocess.check_call(call_arr)
+
+        CLEAN_UP_FILES.append(output_filename + '.unique.sorted')
+        CLEAN_UP_FILES.append(output_filename + '.ambig.sorted')
+        CLEAN_UP_FILES.append(output_filename + '.sorted')
     except:
         call_arr = ['sort', '-T', './', output_filename + '.unique', '-o', output_filename + '.unique.sorted']
         subprocess.call(call_arr)
+
         call_arr = ['sort', '-T', './', output_filename + '.ambig', '-o', output_filename + '.ambig.sorted']
         subprocess.call(call_arr)
         # Output a combined list of inverted kmer indexes.
         call_arr = ['sort', '-m', '-T', './', output_filename + '.unique.sorted', output_filename + '.ambig.sorted', '-o', output_filename + '.sorted']
         subprocess.call(call_arr)
+
+        CLEAN_UP_FILES.append(output_filename + '.unique.sorted')
+        CLEAN_UP_FILES.append(output_filename + '.ambig.sorted')
+        CLEAN_UP_FILES.append(output_filename + '.sorted')
 
 
 def join_kmer_lists(kmer_ii_filename = 'tmp.ii', query_kmer_counts_filename = 'tmp.jf.sorted'):
@@ -362,8 +383,9 @@ def join_kmer_lists(kmer_ii_filename = 'tmp.ii', query_kmer_counts_filename = 't
     # Store the unambiguous k-mer counts.
     contig_counts = defaultdict(int)
 
-    call_arr = ['join', kmer_ii_filename +'.unique.sorted', query_kmer_counts_filename, '-t', '\t']
-    print ' '.join(call_arr)
+    call_arr = ['join', '-t', '\t', kmer_ii_filename +'.unique.sorted', query_kmer_counts_filename]
+    #call_arr.extend(JOIN_PARAM)#, '-t', '\t']
+    #print ' '.join(call_arr)
     join_proc = subprocess.Popen(call_arr, stdout = subprocess.PIPE)
 
     for line in join_proc.stdout:
@@ -382,8 +404,9 @@ def join_kmer_lists(kmer_ii_filename = 'tmp.ii', query_kmer_counts_filename = 't
     # Store the ambiguous k-mer counts.
     ambiguous_kmer_counts = defaultdict(int)
 
-    call_arr = ['join', kmer_ii_filename +'.ambig.sorted', query_kmer_counts_filename, '-t', '\t']
-    print ' '.join(call_arr)
+    call_arr = ['join', '-t', '\t', kmer_ii_filename +'.ambig.sorted', query_kmer_counts_filename]
+    #call_arr.extend(JOIN_PARAM)#, '-t', '\t']
+    #print ' '.join(call_arr)
     join_proc = subprocess.Popen(call_arr, stdout = subprocess.PIPE)
 
     for line in join_proc.stdout:
@@ -396,7 +419,8 @@ def join_kmer_lists(kmer_ii_filename = 'tmp.ii', query_kmer_counts_filename = 't
 
 
     # Store the total k-mer count
-    call_arr = ['join', kmer_ii_filename + '.sorted', query_kmer_counts_filename, '-t', '\t', ]
+    call_arr = ['join', '-t', '\t', kmer_ii_filename + '.sorted', query_kmer_counts_filename]
+    #call_arr.extend(JOIN_PARAM)#, '-t', '\t', ]
     output_file = open(kmer_ii_filename + '.counts.join', 'w')
     join_proc = subprocess.call(call_arr, stdout = output_file)
     #subprocess.call(call_arr)
@@ -595,6 +619,9 @@ def main():
                 print contig.split()[0] + '\t' + str(contig_abundances[contig] / math.pow(options.error_rate,options.kmer_size))
 
     #pprint.pprint(dict(contig_abundances))
+    if not options.save_intermediate_files:
+        for filename in CLEAN_UP_FILES:
+            os.remove(filename)
 
 if __name__ == '__main__':
     main()
