@@ -83,7 +83,7 @@ def get_options():
                       help="Mark region as suspicious if multiple signatures occur within this window size.")
     parser.add_option('-z', "--min-contig-length", dest="min_contig_length", default=1000, type=int,
                       help="Ignore contigs smaller than this length.")
-    parser.add_option('-b', "--ignore-ends", dest="ignore_end_distances", default=0, type=int,
+    parser.add_option('-b', "--ignore-ends", dest="ignore_end_distances", default=200, type=int,
                       help="Ignore flagged regions within b bps from the ends of the contigs.")
     parser.add_option('-k', "--breakpoint-bin", dest="breakpoints_bin", default="50", type=str,
                       help="Bin sized used to find breakpoints.")
@@ -121,8 +121,6 @@ def main():
     global COMMANDS_FILE
     COMMANDS_FILE = open(options.output_dir + '/commands', 'w')
 
-    results_filenames = []
-
     # For each assembly:
     assemblies = options.assembly_filenames.split(",")
     assembly_names = options.assembly_names.split(
@@ -139,6 +137,8 @@ def main():
         ensure_dir(output_dir)
 
         bold("PROCESSING ASSEMBLY: " + str(assembly_name) + ' (' + assembly + ')')
+
+        results_filenames = []
 
         # Filter assembled contigs by length.
         if options.min_contig_length > 0:
@@ -163,13 +163,11 @@ def main():
         bam_location, sorted_bam_location, pileup_file = \
                 run_samtools(options, assembly, output_dir, sam_output_location, index=True)
 
-        # If coverage file doesn't exist, calculate it.
-        if options.coverage_file is None:
-            step("CALCULATING CONTIG COVERAGE")
-            options.coverage_file = calculate_contig_coverage(options, output_dir, pileup_file)
-            results(options.coverage_file)
-            #pileup_file = run_abundance_by_kmers(options, assembly, output_dir)
-            results(options.coverage_file)
+        # Run coverage estimation.
+        step("CALCULATING CONTIG COVERAGE")
+        options.coverage_file = calculate_contig_coverage(options, output_dir, pileup_file)
+        #pileup_file = run_abundance_by_kmers(options, assembly, output_dir)
+        results(options.coverage_file)
 
         contig_abundances = get_contig_abundances(options.coverage_file)
 
@@ -185,13 +183,28 @@ def main():
         results_filenames.append(run_depth_of_coverage(options, output_dir, pileup_file))
 
         # Run Breakpoint finder.
+        outputBreakpointDir = output_dir + "/breakpoint/"
+        ouputBreakpointLocation = outputBreakpointDir + "errorsDetected.csv"
+        ensure_dir(outputBreakpointDir)
+
+        step("BREAKPOINT")
+        results_filenames.append(run_breakpoint_finder(options, assembly, unaligned_dir, outputBreakpointDir))
 
         # Run REAPR/mate-pair happiness line.
 
         # Generate summary files.
+        step("SUMMARY")
+        final_misassemblies = generate_summary_files(options, results_filenames, contig_lengths, output_dir)
+        results(output_dir + "/summary.bed")
+
+        generate_summary_table(output_dir + "/summary.tsv", all_contig_lengths, \
+            contig_lengths, contig_abundances, final_misassemblies)
+        results(output_dir + "/summary.tsv")
 
     # Generate comparison plots of all assemblies.
-
+    bold("GENERATING ASSEMBLY COMPARISON PLOTS")
+    generate_comparison_plot(options, assembly_names)
+    results(options.output_dir + '/comparison_plots.pdf')
 
 def filter_short_contigs(fasta_filename, min_contig_length, filtered_fasta_filename):
     """
@@ -513,14 +526,231 @@ def run_depth_of_coverage(options, output_dir, pileup_file):
         Filename of flagged coverage regions.
     """
 
-    dp_fp = output_dir + "/coverage/errors_cov.gff"
+    coverage_error = open(output_dir + "/coverage/error.log", 'a')
+
+    dp_fp = output_dir + "/coverage/errors_cov.bed"
     abundance_file = options.coverage_file
     #call_arr = ["src/py/depth_of_coverage.py", "-a", abundance_file, "-m", pileup_file, "-w", options.window_size, "-o", dp_fp, "-g", "-e"]
     call_arr = [os.path.join(BASE_PATH, "src/py/depth_of_coverage.py"), "-m", pileup_file, "-w", options.window_size, "-o", dp_fp, "-g", "-e", "-c", options.threads]
-    run(call_arr)
+    run(call_arr, stdout=coverage_error, stderr=coverage_error)
     results(dp_fp)
 
     return dp_fp
+
+
+def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir):
+    """Attempts to find breakpoints.
+
+    Args:
+        options: Command line options.
+        assembly_filename: Assembly FASTA filename.
+        unaligned: Unaligned sequences filename.
+        breakpoint_dir: Output breakpoint directory.
+
+    Returns:
+        Filename of the breakpoints found.
+    """
+
+    std_err_file = open(breakpoint_dir + 'splitter_std_err.log', 'w')
+    call_arr = [os.path.join(BASE_PATH,'src/py/breakpoint_splitter.py'),\
+            '-u', unaligned,\
+            '-o', breakpoint_dir + 'split_reads/']
+
+    run(call_arr, stderr=std_err_file)
+    #out_cmd( "", std_err_file.name, call_arr)
+    #call(call_arr, stderr=std_err_file)
+    std_err_file.close()
+
+    std_err_file = open(breakpoint_dir + 'std_err.log','w')
+    call_arr = [os.path.join(BASE_PATH, 'src/py/breakpoint_finder.py'),\
+            '-a', assembly_filename,\
+            '-r', breakpoint_dir + 'split_reads/',\
+            '-b', options.breakpoints_bin, '-o', breakpoint_dir,\
+            '-c', options.coverage_file,\
+            '-p', options.threads]
+    run(call_arr, stderr=std_err_file)
+    #out_cmd( "", std_err_file.name,call_arr)
+    #call(call_arr,stderr=std_err_file)
+    results(breakpoint_dir + 'interesting_bins.bed')
+    return breakpoint_dir + 'interesting_bins.bed'
+
+
+def generate_summary_files(options, results_filenames, contig_lengths, output_dir):
+    """ Generate the summary files from the individual error files.
+
+    Args:
+        options: Command line options.
+        results_filenames: Filename of the flagged BED files.
+        contig_lengths: Lengths of contigs.
+        output_dir: Given assembly output directory.
+
+    Returns:
+        Final mis-assemblies in tuple format.
+    """
+
+    summary_file = open(output_dir + "/summary.bed", 'w')
+    suspicious_file = open(output_dir + "/suspicious.bed", 'w')
+    summary_table_file = open(output_dir + "/summary.tsv", 'w')
+    #suspicious_table_file = open(options.output_dir + "/suspicious.tsv", 'w')
+
+    misassemblies = []
+    for results_file in results_filenames:
+        if results_file:
+            for line in open(results_file, 'r'):
+                misassemblies.append(line.strip().split('\t'))
+
+    # Sort misassemblies by start site.
+    misassemblies.sort(key = lambda misassembly: (misassembly[0], int(misassembly[1]), int(misassembly[2])))
+    final_misassemblies = []
+    for misassembly in misassemblies:
+
+        # Truncate starting/ending region if it is near the end of the contigs.
+        if int(misassembly[1]) <= options.ignore_end_distances and \
+            int(misassembly[2]) > options.ignore_end_distances:
+          misassembly[1] = str(options.ignore_end_distances + 1)
+
+        if int(misassembly[2]) >= (contig_lengths[misassembly[0]] - options.ignore_end_distances) and \
+            int(misassembly[1]) < (contig_lengths[misassembly[0]] - options.ignore_end_distances):
+          misassembly[2] = str(contig_lengths[misassembly[0]] - options.ignore_end_distances - 1)
+
+        # Don't print a flagged region if it occurs near the ends of the contig.
+        if int(misassembly[1]) > options.ignore_end_distances and \
+                int(misassembly[2]) < (contig_lengths[misassembly[0]] - options.ignore_end_distances):
+            summary_file.write('\t'.join(misassembly) + '\n')
+
+            final_misassemblies.append(misassembly)
+
+    summary_file.close()
+    return final_misassemblies
+
+
+def generate_summary_table(table_filename, all_contig_lengths, filtered_contig_lengths, contig_abundances, misassemblies, orf=False):
+    """
+    Output the misassemblies in a table format:
+
+    contig_name  contig_length  low_cov  low_cov_bps  high_cov  high_cov_bps ...
+    CONTIG1 12000   1   100 0   0 ...
+    CONTIG2 100 NA  NA  NA ...
+    """
+
+    table_file = open(table_filename, 'w')
+
+    if orf:
+        table_file.write("contig_name\tcontig_length\tabundance\torf_low_cov\torf_low_cov_bps\torf_high_cov\torf_high_cov_bps\torf_reapr\torf_reapr_bps\torf_breakpoints\torf_breakpoints_bps\n")
+    else:
+        table_file.write("contig_name\tcontig_length\tabundance\tlow_cov\tlow_cov_bps\thigh_cov\thigh_cov_bps\treapr\treapr_bps\tbreakpoints\tbreakpoints_bps\n")
+
+    prev_contig = None
+    curr_contig = None
+
+    # Misassembly signatures
+    low_coverage = 0
+    low_coverage_bps = 0
+    high_coverage = 0
+    high_coverage_bps = 0
+    reapr = 0
+    reapr_bps = 0
+    breakpoints = 0
+    breakpoints_bps = 0
+
+    processed_contigs = set()
+
+    for misassembly in misassemblies:
+        """
+        contig00001     REAPR   Read_orientation        88920   97033   .       .       .       Note=Warning: Bad read orientation;colour=1
+        contig00001     REAPR   FCD     89074   90927   0.546142        .       .       Note=Error: FCD failure;colour=17
+        contig00001     DEPTH_COV       low_coverage    90818   95238   29.500000       .       .       low=30.000000;high=70.000000;color=#7800ef
+        """
+
+        curr_contig = misassembly[0]
+
+        if prev_contig is None:
+            prev_contig = curr_contig
+
+        if curr_contig != prev_contig:
+            # Output previous contig stats.
+            table_file.write(prev_contig + '\t' + str(filtered_contig_lengths[prev_contig]) + '\t' + str(contig_abundances[prev_contig]) + '\t' + \
+                str(low_coverage) + '\t' + str(low_coverage_bps) + '\t' + str(high_coverage) + '\t' + \
+                str(high_coverage_bps) + '\t' + str(reapr) + '\t' + str(reapr_bps) + '\t' + str(breakpoints) + '\t' + \
+                str(breakpoints_bps) + '\n')
+
+            processed_contigs.add(prev_contig)
+
+            # Reset misassembly signature counts.
+            low_coverage = 0
+            low_coverage_bps = 0
+            high_coverage = 0
+            high_coverage_bps = 0
+            reapr = 0
+            reapr_bps = 0
+            breakpoints = 0
+            breakpoints_bps = 0
+
+            prev_contig = curr_contig
+
+        # Process the current contig misassembly.
+        if misassembly[3] == 'REAPR':
+            #if 'Warning' not in misassembly[8]:
+            #    reapr += 1
+            #    reapr_bps += (int(misassembly[4]) - int(misassembly[3]) + 1)
+            reapr += 1
+            reapr_bps += (int(misassembly[2]) - int(misassembly[1]) + 1)
+
+        elif misassembly[3] == 'Low_coverage':
+            low_coverage += 1
+            low_coverage_bps += (int(misassembly[2]) - int(misassembly[1]) + 1)
+
+        elif misassembly[3] == 'High_coverage':
+            high_coverage += 1
+            high_coverage_bps += (int(misassembly[2]) - int(misassembly[1]) + 1)
+
+        elif misassembly[3] == 'Breakpoint_finder':
+            breakpoints += 1
+            breakpoints_bps += (int(misassembly[2]) - int(misassembly[1]) + 1)
+
+        else:
+            print("Unhandled error: " + misassembly[3])
+
+    if prev_contig:
+        # Output previous contig stats.
+        table_file.write(prev_contig + '\t' + str(filtered_contig_lengths[prev_contig]) + '\t' + str(contig_abundances[prev_contig]) + '\t' + \
+            str(low_coverage) + '\t' + str(low_coverage_bps) + '\t' + str(high_coverage) + '\t' + \
+            str(high_coverage_bps) + '\t' + str(reapr) + '\t' + str(reapr_bps) + '\t' + str(breakpoints) + '\t' + \
+            str(breakpoints_bps) + '\n')
+
+        processed_contigs.add(prev_contig)
+
+    # We need to add the remaining, error-free contigs.
+    for contig in filtered_contig_lengths:
+        if contig not in processed_contigs:
+            table_file.write(contig + '\t' + str(filtered_contig_lengths[contig]) + '\t' + str(contig_abundances[contig]) + '\t' + \
+                '0\t0\t0\t0\t0\t0\t0\t0\n')
+            processed_contigs.add(contig)
+
+
+    # Finally, add the contigs that were filtered out prior to evaluation.
+    for contig in all_contig_lengths:
+        if contig not in processed_contigs:
+            table_file.write(contig + '\t' + str(all_contig_lengths[contig]) + '\t' + 'NA\t' + \
+                'NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n')
+            processed_contigs.add(contig)
+
+
+def generate_comparison_plot(options, assembly_names):
+    """ Generate a plot showing the cumulative assembly vs. cumulative error for all the assemblies.
+
+    Args:
+        assembly_names: Assembly names.
+    """
+
+    std_err_file = open(options.output_dir + 'error.log', 'a')
+
+    assembly_summary_files = []
+    for name in assembly_names:
+        assembly_summary_files.append(options.output_dir + '/' + name + '/summary.tsv')
+
+    call_arr = ["Rscript", os.path.join(BASE_PATH, "src/R/compare_assemblies.R"), ','.join(assembly_summary_files), ','.join(assembly_names), options.output_dir + '/comparison_plots']
+    run(call_arr, stdout=std_err_file, stderr=std_err_file)
 
 
 def get_contig_abundances(abundance_filename):

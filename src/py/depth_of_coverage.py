@@ -99,10 +99,12 @@ def find_coverage_errors_scipy(mpileup_file, output_location, window_size, abund
 
                     if not in_range(coverage_meds[i], lower_hinge, upper_hinge):
                         cov_type = "Low_coverage"
-                        color = "#7800ef"
+                        #color = "#7800ef"
+                        color = "0,0,255"
                         if coverage_meds[i] > upper_hinge:
                             cov_type = "High_coverage"
-                            color = "#0077ee"
+                            #color = "#0077ee"
+                            color = "255,0,0"
 
                         median = coverage_meds[i]
                         start_pos = i + 1
@@ -154,17 +156,21 @@ def find_coverage_errors_scipy(mpileup_file, output_location, window_size, abund
     if prev_contig:
         # Calculate median coverage, and lower/upper hinges.
         #abundance_dict[prev_contig] = tukey_summary(curr_coverages, window_size)
-        coverage_meds = scipy.signal.medfilt(np.array(curr_coverages), kernel_size = window_size)
+        #coverage_meds = scipy.signal.medfilt(np.array(curr_coverages), kernel_size = window_size)
+        coverages_np = np.asarray(curr_coverages)
+        coverage_meds = np.convolve(coverages_np, np.ones((window_size,))/window_size, mode='full')
 
         i = 0
         while i < len(coverage_meds):
 
             if not in_range(coverage_meds[i], lower_hinge, upper_hinge):
                 cov_type = "Low_coverage"
-                color = "#7800ef"
+                #color = "#7800ef"
+                color = "0,0,255"
                 if coverage_meds[i] > upper_hinge:
                     cov_type = "High_coverage"
-                    color = "#0077ee"
+                    #color = "#0077ee"
+                    color = "255,0,0"
 
                 median = coverage_meds[i]
                 start_pos = i + 1
@@ -194,8 +200,9 @@ def find_coverage_errors_scipy(mpileup_file, output_location, window_size, abund
 
     write_lock.acquire()
     for region in flagged_regions:
-        bad_cvg_file.write("%s\t%s\t%s\t%d\t%d\t%f\t.\t.\tlow=%f;high=%f;color=%s\n" % (region[0], region[1], \
-                    region[2], region[3], region[4], region[5], region[6], region[7], region[8]))
+        #bad_cvg_file.write("%s\t%s\t%s\t%d\t%d\t%f\t.\t.\tlow=%f;high=%f;color=%s\n" % (region[0], region[1], \
+        #            region[2], region[3], region[4], region[5], region[6], region[7], region[8]))
+        bad_cvg_file.write("%s\t%s\t%s\t%s\t0\t.\t%s\t%s\t%s\n" % (region[0], region[3] - 1, region[4], region[2], region[3], region[4], region[8]))
     write_lock.release()
     #if prev_contig:
     #    abundance_dict[prev_contig] = tukey_summary(curr_coverages, window_size)
@@ -247,10 +254,12 @@ def find_coverage_errors(mpile_file, output_location, window_size, abundance_dic
 
             if not in_range(median, lower_hinge, upper_hinge):
                 cov_type = "Low_coverage"
-                color = "#7800ef"
+                #color = "#7800ef"
+                color = "0,0,255"
                 if median > upper_hinge:
                     cov_type = "High_coverage"
-                    color = "#0077ee"
+                    #color = "#0077ee"
+                    color = "255,0,0"
 
                 # Extend previous window?
                 if len(flagged_regions) > 0 and \
@@ -267,8 +276,9 @@ def find_coverage_errors(mpile_file, output_location, window_size, abundance_dic
 
     write_lock.acquire()
     for region in flagged_regions:
-        bad_cvg_file.write("%s\t%s\t%s\t%d\t%d\t%f\t.\t.\tlow=%f;high=%f;color=%s\n" % (region[0], region[1], \
-                    region[2], region[3], region[4], region[5], region[6], region[7], region[8]))
+        #bad_cvg_file.write("%s\t%s\t%s\t%d\t%d\t%f\t.\t.\tlow=%f;high=%f;color=%s\n" % (region[0], region[1], \
+        #            region[2], region[3], region[4], region[5], region[6], region[7], region[8]))
+        bad_cvg_file.write("%s\t%s\t%s\t%s0\t+\t%s\t%s\t%s\n", region[0], region[3], region[4], region[2], region[3], region[4], region[8])
     write_lock.release()
 
 

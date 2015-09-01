@@ -25,17 +25,18 @@ class BreakpointFinder:
         self.contig_lengths = {}
         self.average_read_length = 0
         self.number_of_reads = 0
-    
+
     def set_locations(self):
-        self.bowtie_dir = os.path.join(self.base_path, "bin/bowtie2-2.2.2/")
-        self.bowtie_loc = self.bowtie_dir + "bowtie2"
-        self.bowtie_build_loc = self.bowtie_dir + "bowtie2-build"
+        #self.bowtie_dir = os.path.join(self.base_path, "bin/bowtie2-2.2.2/")
+        #self.bowtie_loc = self.bowtie_dir + "bowtie2"
+        self.bowtie_loc = "bowtie2"
+        self.bowtie_build_loc = "bowtie2-build"
         self.breakpoint_dir = self.options.output_dir
 
         self.bowtie_index =  self.breakpoint_dir + "bowtie-index/"
         self.index_prefix = self.bowtie_index+ "breakpoint"
         ensure_dir(self.bowtie_index)
-        
+
         self.sam_output_dir = self.breakpoint_dir + "sam/"
         self.sam_output_location = self.sam_output_dir + "breakpoints.sam"
         ensure_dir(self.sam_output_dir)
@@ -54,13 +55,13 @@ class BreakpointFinder:
         self.binned_breakpoint_file = self.breakpoint_dir + "binned_breakpoints.csv"
         self.collapsed_breakpoint_file = self.breakpoint_dir\
                 + "collapsed_breakpoints.csv"
-        self.bins_of_interest_file = self.breakpoint_dir + "interesting_bins.gff"
+        self.bins_of_interest_file = self.breakpoint_dir + "interesting_bins.bed"
         self.meta_file = self.breakpoint_dir + "meta_data.data"
 
         self.bin_contents_file = self.breakpoint_dir + "bin_contents.csv"
-        
+
         self.reciprical_file = self.breakpoint_dir + "reciprical_breakpoints.csv"
-    
+
     def read_coverages(self):
         with open(self.options.coverage_file) as cov_f:
             for line in cov_f:
@@ -180,7 +181,7 @@ class BreakpointFinder:
         warning("End pass 1")
         warning("Surviving bins assembled: %d surviving bins." % (len(self.surviving_bins)))
         warning("Ave read len: %f " % (self.average_read_length / float(self.number_of_reads)))
-        
+
         warning("About to output bin contents")
         self.output_bin_contents(True)
         warning("Bin contents outputted")
@@ -236,22 +237,26 @@ class BreakpointFinder:
                             #    warning("Skipping bin: %s because number of sisters: %d was low" % (current_key, num_sisters))
                             #    continue
                             rec = find_reciprical_pair_2(b_c_d_r, current_key)
-                            #if rec == None:
-                            #    warning("No Reciprical for bin: %s so skipping" % (current_key))
-                            #    continue
-                            out_file.write("%s\tBreakpoint_finder"\
-                                    "\tBreakpoint_Finder_excessive_alignment"\
-                                    "\t%d\t%d\t%d\t.\t.\t"\
-                                    "singletons_aligned_in_bin=%f;color=%s"\
-                                    "number_of_sisters=%d;reciprocal=%s\n"\
-                                    %(split_line[1],\
-                                    int(split_line[2]),\
-                                    int(split_line[2])+self.bin_size-1,\
-                                    int(split_line[0]),\
-                                    float(split_line[0]),\
-                                    color,\
-                                    num_sisters,\
-                                    str(rec)))
+                            if rec == None:
+                                warning("No Reciprical for bin: %s so skipping" % (current_key))
+                                continue
+                            out_file.write("%s\t%d\t%d\tBreakpoint_finder\n"\
+                                    % (split_line[1],\
+                                    int(split_line[2])-1,\
+                                    int(split_line[2])+self.bin_size-1))
+                            # out_file.write("%s\tBreakpoint_finder"\
+                            #         "\tBreakpoint_Finder_excessive_alignment"\
+                            #         "\t%d\t%d\t%d\t.\t.\t"\
+                            #         "singletons_aligned_in_bin=%f;color=%s"\
+                            #         "number_of_sisters=%d;reciprocal=%s\n"\
+                            #         %(split_line[1],\
+                            #         int(split_line[2]),\
+                            #         int(split_line[2])+self.bin_size-1,\
+                            #         int(split_line[0]),\
+                            #         float(split_line[0]),\
+                            #         color,\
+                            #         num_sisters,\
+                            #         str(rec)))
 
 
 
@@ -276,7 +281,7 @@ class BreakpointFinder:
                     warning("Removing bin: %s because eq matches: %f < cutoff: %f" % (split_l[1]+"\t"+split_l[2], (2* ave_read_len*num_matches_in_bin)/float(self.bin_size), avg_coverage_in_bin[split_l[1] + "\t" + split_l[2]]/4.0))
         warning("Surviving bins assembled: %d surviving bins." % (len(self.surviving_bins)))
         warning("Ave read len: %f " % (self.average_read_length / float(self.number_of_reads)))
-        
+
         warning("About to output bin contents")
         self.output_bin_contents(True)
         warning("Bin contents outputted")
@@ -378,7 +383,7 @@ class BreakpointFinder:
                             self.surviving_bins.append(split_line[1] + "\t" + split_line[2])
         with open(self.meta_file, 'w') as meta_f:
             meta_f.write("Avg bin size: %f\nStd_Dev: %f\nCutoff: %f\n"\
-                    % (float(avg_bin_size), float(std_dev), float(cutoff))) 
+                    % (float(avg_bin_size), float(std_dev), float(cutoff)))
 
 
 
@@ -412,7 +417,7 @@ class BreakpointFinder:
             contig_bundle = []
             #warning("Read contig returned in : %f" %(time.time() - start_time))
             yield ret_bundle
- 
+
     def read_in_lengths(self):
         log_file = open(self.breakpoint_dir + "log.log", 'w')
         for file_name in os.listdir(self.conc_dir):
@@ -423,7 +428,7 @@ class BreakpointFinder:
                     for (read,length) in self.read_read(reads_file):
                         #print ("Read: %s Length: %s" %(read,length))
                         self.read_lengths[read] = length
-    
+
     def read_read(self, fp):
         run_flag = True
         while run_flag:
@@ -454,7 +459,7 @@ class BreakpointFinder:
                                          int(line_components[2].split(":")[1])
                             if line[0] != '@':
                                 should_output = True
-                                
+
                                 self.average_read_length += len(line_components[9])
                                 self.number_of_reads += 1
                                 if line_components[2] != "*":
@@ -498,7 +503,7 @@ class BreakpointFinder:
         self.bin_breakpoints()
         self.collapse_bins()
         self.trim_bins_3()
-    
+
     def getOptions(self):
         parser = OptionParser()
         parser.add_option("-a", "--assembly-file", dest="assembly_file",\
@@ -640,4 +645,3 @@ def main():
 
 if __name__=='__main__':
     main()
-
