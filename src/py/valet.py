@@ -126,11 +126,15 @@ def main():
     assembly_names = options.assembly_names.split(
         ",") if options.assembly_names else ['asm_']
 
+    # Store the final assembly names.
+    final_assembly_names = []
+
     for counter, assembly in enumerate(assemblies):
 
         # Get the current assembly's name.
         assembly_name = assembly_names[counter % len(assembly_names)] \
                 if options.assembly_names else 'asm_' + str(counter)
+        final_assembly_names.append(assembly_name)
 
         # Create the assembly output directory.
         output_dir = options.output_dir + '/' + assembly_name
@@ -203,7 +207,7 @@ def main():
 
     # Generate comparison plots of all assemblies.
     bold("GENERATING ASSEMBLY COMPARISON PLOTS")
-    generate_comparison_plot(options, assembly_names)
+    generate_comparison_plot(options, final_assembly_names)
     results(options.output_dir + '/comparison_plots.pdf')
 
 def filter_short_contigs(fasta_filename, min_contig_length, filtered_fasta_filename):
@@ -743,7 +747,7 @@ def generate_comparison_plot(options, assembly_names):
         assembly_names: Assembly names.
     """
 
-    std_err_file = open(options.output_dir + 'error.log', 'a')
+    std_err_file = open(options.output_dir + '/error.log', 'a')
 
     assembly_summary_files = []
     for name in assembly_names:
