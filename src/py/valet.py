@@ -145,14 +145,14 @@ def main():
         results_filenames = []
 
         # Filter assembled contigs by length.
-        if options.min_contig_length > 0:
-            step("FILTERING ASSEMBLY CONTIGS LESS THAN " + str(options.min_contig_length) + ' BPs')
-            filtered_filename = output_dir + '/filtered_assembly.fasta'
-            ensure_dir(filtered_filename)
-            all_contig_lengths = filter_short_contigs(assembly, options.min_contig_length, filtered_filename)
-            results(filtered_filename)
-            assembly = filtered_filename
-            #input_fasta_saved = options.fasta_file
+        #if options.min_contig_length > 0:
+        step("FILTERING ASSEMBLY CONTIGS LESS THAN " + str(options.min_contig_length) + ' BPs')
+        filtered_filename = output_dir + '/filtered_assembly.fasta'
+        ensure_dir(filtered_filename)
+        all_contig_lengths = filter_short_contigs(assembly, options.min_contig_length, filtered_filename)
+        results(filtered_filename)
+        assembly = filtered_filename
+        #input_fasta_saved = options.fasta_file
 
         # Align reads with Bowtie2
         step("ALIGNING READS")
