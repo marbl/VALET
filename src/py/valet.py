@@ -146,6 +146,7 @@ def main():
 
         # First run Reapr's facheck to check if the filenames are acceptable.
         facheck_assembly = run_reapr_facheck(assembly, output_dir)
+        results(facheck_assembly)
 
         # Filter assembled contigs by length.
         step("FILTERING ASSEMBLY CONTIGS LESS THAN " + str(options.min_contig_length) + ' BPs')
@@ -217,6 +218,17 @@ def run_reapr_facheck(assembly, output_dir):
     """ Run reapr's facheck on the assembly.
 
     Args:
+        assembly: Assembly FASTA filename.
+        output_dir: Output directory for a specific assembly.
+
+    Returns:
+        The filename of the facheck'd assembly.
+    """
+
+    facheck_assembly = output_dir + '/assembly_facheck'
+    call_arr = ["reapr", "facheck", assembly, facheck_assembly]
+    run(call_arr)
+    return facheck_assembly
 
 
 def filter_short_contigs(fasta_filename, min_contig_length, filtered_fasta_filename):
