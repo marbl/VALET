@@ -144,12 +144,14 @@ def main():
 
         results_filenames = []
 
+        # First run Reapr's facheck to check if the filenames are acceptable.
+        facheck_assembly = run_reapr_facheck(assembly, output_dir)
+
         # Filter assembled contigs by length.
-        #if options.min_contig_length > 0:
         step("FILTERING ASSEMBLY CONTIGS LESS THAN " + str(options.min_contig_length) + ' BPs')
         filtered_filename = output_dir + '/filtered_assembly.fasta'
         ensure_dir(filtered_filename)
-        all_contig_lengths = filter_short_contigs(assembly, options.min_contig_length, filtered_filename)
+        all_contig_lengths = filter_short_contigs(facheck_assembly, options.min_contig_length, filtered_filename)
         results(filtered_filename)
         assembly = filtered_filename
         #input_fasta_saved = options.fasta_file
@@ -209,6 +211,13 @@ def main():
     bold("GENERATING ASSEMBLY COMPARISON PLOTS")
     generate_comparison_plot(options, final_assembly_names)
     results(options.output_dir + '/comparison_plots.pdf')
+
+
+def run_reapr_facheck(assembly, output_dir):
+    """ Run reapr's facheck on the assembly.
+
+    Args:
+
 
 def filter_short_contigs(fasta_filename, min_contig_length, filtered_fasta_filename):
     """
