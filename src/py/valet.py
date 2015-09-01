@@ -151,7 +151,6 @@ def main():
         # Filter assembled contigs by length.
         step("FILTERING ASSEMBLY CONTIGS LESS THAN " + str(options.min_contig_length) + ' BPs')
         filtered_filename = output_dir + '/filtered_assembly.fasta'
-        ensure_dir(filtered_filename)
         all_contig_lengths = filter_short_contigs(facheck_assembly, options.min_contig_length, filtered_filename)
         results(filtered_filename)
         assembly = filtered_filename
@@ -226,9 +225,10 @@ def run_reapr_facheck(assembly, output_dir):
     """
 
     facheck_assembly = output_dir + '/assembly_facheck'
+    ensure_dir(facheck_assembly)
     call_arr = ["reapr", "facheck", assembly, facheck_assembly]
     run(call_arr)
-    return facheck_assembly
+    return facheck_assembly + '.fa'
 
 
 def filter_short_contigs(fasta_filename, min_contig_length, filtered_fasta_filename):
