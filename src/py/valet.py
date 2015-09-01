@@ -196,7 +196,10 @@ def main():
         step("BREAKPOINT")
         results_filenames.append(run_breakpoint_finder(options, assembly, unaligned_dir, outputBreakpointDir))
 
-        # Run REAPR/mate-pair happiness line.
+        # Run REAPR/mate-pair happiness.
+        if options.first_mates and options.second_mates:
+            # First partition the SAM file into bins based on coverage.
+            bin_reads_by_coverage(sam_output_location, contig_abundances, output_dir)
 
         # Generate summary files.
         step("SUMMARY")
@@ -598,6 +601,34 @@ def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir)
     #call(call_arr,stderr=std_err_file)
     results(breakpoint_dir + 'interesting_bins.bed')
     return breakpoint_dir + 'interesting_bins.bed'
+
+
+def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
+    """ Bin the reads found in the SAM file by their coverages.
+
+    Args:
+        sam_filename: Filename of the SAM file containing the sequences.
+        contig_abundances: Dictionary containing contig_name => abundance.
+    """
+
+    abundance_read_filename = output_dir + '/bins/abun_read'
+    ensure_dir(abundance_read_filename)
+    abundance_read_file = open(abundance_read_filename, 'w')
+
+    # Skip the header sequence.
+    line = sam_file.readline()
+    while line.startswith("@"):
+        line = sam_file.readline()
+
+    while line:
+        tuple = line.split('\t')
+
+        if tuple[2] != '*':
+            abundance_read_file.write(str(int(math.ceil(contig_abundances[tuple[2]]))) + '\t' + tuple[0] + '\t' + tuple[9] + '\t' + tuple[10] + '\n')
+
+        line = sam_file.readline()
+
+    abundance_read_file.close()
 
 
 def generate_summary_files(options, results_filenames, contig_lengths, output_dir):
