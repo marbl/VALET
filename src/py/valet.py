@@ -110,6 +110,9 @@ def get_options():
         parser.print_help()
         exit(-1)
 
+    if options.first_mates and options.second_mates:
+        options.reads_filenames = options.first_mates + ',' + options.second_mates
+
     ensure_dir(options.output_dir + '/')
 
     return (options, args)
@@ -376,20 +379,20 @@ def run_bowtie2(options, assembly_filename, output_dir, output_sam):
 
     bowtie2_args = ""
     bowtie2_unaligned_check_args = ""
-    if options.first_mates:
-        bowtie2_args = "-a -x " + assembly_index + " -1 " + options.first_mates\
-                + " -2 " + options.second_mates + " -p " + options.threads\
-                + " --very-sensitive -a " + " --reorder --"\
-                + options.orientation + " -I " + options.min_insert_size\
-                + " -X " + options.max_insert_size + " --no-mixed" #+ " --un-conc "\
-                #+ unaligned_file
-
-        bowtie2_unaligned_check_args = "-a -x " + assembly_index + read_type + " -U "\
-                + options.first_mates + "," + options.second_mates + " --very-sensitive -a "\
-                + " --reorder -p " + options.threads + " --un " + unaligned_file
-
-    else:
-        bowtie2_args = "-a -x " + assembly_index + read_type + " -U "\
+    # if options.first_mates:
+    #     bowtie2_args = "-a -x " + assembly_index + " -1 " + options.first_mates\
+    #             + " -2 " + options.second_mates + " -p " + options.threads\
+    #             + " --very-sensitive -a " + " --reorder --"\
+    #             + options.orientation + " -I " + options.min_insert_size\
+    #             + " -X " + options.max_insert_size + " --no-mixed" #+ " --un-conc "\
+    #
+    #     bowtie2_unaligned_check_args = "-a -x " + assembly_index + read_type + " -U "\
+    #             + options.first_mates + "," + options.second_mates + " --very-sensitive -a "\
+    #             + " --reorder -p " + options.threads + " --un " + unaligned_file
+    #
+    #
+    # else:
+    bowtie2_args = "-a -x " + assembly_index + read_type + " -U "\
                 + options.reads_filenames + " --very-sensitive -a "\
                 + " --reorder -p " + options.threads + " --un " + unaligned_file
 
@@ -616,7 +619,7 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
     abundance_read_file = open(abundance_read_filename, 'w')
 
     # Skip the header sequence.
-    line = sam_file.readline()
+    line = open(sam_filename, 'r').readline()
     while line.startswith("@"):
         line = sam_file.readline()
 
