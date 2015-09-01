@@ -418,7 +418,6 @@ def results(*objs):
 def warning(*objs):
     print("INFO:\t",*objs, file=sys.stderr)
 
-
 def error(*objs):
     print(bcolors.WARNING + "ERROR:\t" + bcolors.ENDC, *objs, file=sys.stderr)
 
