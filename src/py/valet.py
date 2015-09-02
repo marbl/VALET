@@ -664,12 +664,13 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
     7       HWUSI-EAS626_102891784:1:102:10765:10655/1      CAGCAATCCAGTCTTTAACTTCTGGGTGCCATGCAGGATGCGGTATATAAACCTGTCCAGCTTCCCACATTGGAGACACTGACGCCGCACG     GGGGGGGGGGGGGGGGGGGGGGGGAECADEFFFFEGGGGGFGGEEAFFFDFGGGFEGEGEGBEGEGEEEDEE?EBEDEEEBCDBCECB=A#
     7       HWUSI-EAS626_102891784:1:102:10765:10655/2      GCTTTGCAGTAGCGTCAGGATACATGCGGGACATGGCTCTAATAGCGTCTAGCGTCTCAGTAAAGCTTAAACGCTTGTGGCACCAGTTAGGGCGCAGGTA    >>>?=,?:D?D?CCCBCDEF5BEEEFGDGEFCD?EGGEBGFEGGGGFFGGEGGGFGGGDGFGFGGEEEE?AFFBGFFFFEECAFFGGG=FFFEGGDFGGG
     """
-    for line in abundance_read_file:
-        tuple = line.split('\t')
-        curr_abun = tuple[0]
-        header = tuple[1]
-        seq = tuple[2]
-        qual = tuple[3]
+    prev_line = abundance_read_file.readline()
+    curr_line = abundance_read_file.readline()
+    prev_tuple = prev_line.split("\t")
+    curr_tuple = curr_line.split("\t")
+
+    # Sometimes the sequence files are missing mates, we need to remove any unpaired sequence.
+    while True:
 
         if prev_abun is None or curr_abun != prev_abun:
             # Setup the writers.
@@ -677,12 +678,55 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
             first_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_1.fq', 'w')
             second_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_2.fq', 'w')
 
-        if header.endswith("/1"):
-            first_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
-        elif header.endswith("/2"):
-            second_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
+        if prev_tuple[1].strip('/1') == curr_tuple[1].strip('/2'):
+            first_mates_writer.write('@' + prev_tuple[1] + '\n' + prev_tuple[2] + '\n+\n' + prev_tuple[3])
+            second_mates_writer.write('@' + curr_tuple[1] + '\n' + curr_tuple[2] + '\n+\n' + curr_tuple[3])
 
-        prev_abun = curr_abun
+            # Read two new lines.
+            prev_line = abundance_read_file.readline()
+            if not prev_line: break
+
+            curr_line = abundance_read_file.readline()
+            if not curr_line: break
+
+            prev_tuple = prev_line.split("\t")
+            curr_tuple = curr_line.split("\t")
+        else:
+            prev_tuple = curr_tuple
+
+            # Only read one new line.
+            curr_line = abundance_read_file.readline()
+            if not curr_line: break
+            curr_tuple = curr_line.split("\t")
+
+        #line1 = abundance_read_file.readline()
+        #line2 = abundance_read_file.readline()
+        #if not curr_line: break
+
+        prev_abun = prev_tuple[0]
+        curr_abun = curr_tuple[0]
+
+    # for line in abundance_read_file:
+    #     tuple = line.split('\t')
+    #     curr_abun = tuple[0]
+    #     header = tuple[1]
+    #     seq = tuple[2]
+    #     qual = tuple[3]
+    #
+    #     if prev_abun is None or curr_abun != prev_abun:
+    #         # Setup the writers.
+    #         os.makedirs(output_dir + '/bins/' + curr_abun)
+    #         first_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_1.fq', 'w')
+    #         second_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_2.fq', 'w')
+    #
+    #     if header.endswith("/1"):
+    #         first_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
+    #     elif header.endswith("/2"):
+    #         second_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
+    #
+    #     prev_abun = curr_abun
+
+    # Sometimes the sequence files are missing mates, we need to remove any unpaired sequence.
 
 
 def generate_summary_files(options, results_filenames, contig_lengths, output_dir):
