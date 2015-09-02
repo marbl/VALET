@@ -203,7 +203,11 @@ def main():
         # Run REAPR/mate-pair happiness.
         if options.first_mates and options.second_mates:
             # First partition the SAM file into bins based on coverage.
-            bin_reads_by_coverage(sam_output_location, contig_abundances, output_dir)
+            bin_paths = bin_reads_by_coverage(sam_output_location, contig_abundances, output_dir)
+
+            # Run REAPR on each individual bin.
+            for bin in bin_paths:
+                run_reapr(options, bin, assembly)
 
         # Generate summary files.
         step("SUMMARY")
@@ -613,6 +617,10 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
     Args:
         sam_filename: Filename of the SAM file containing the sequences.
         contig_abundances: Dictionary containing contig_name => abundance.
+        output_dir: Current assembly output directory.
+
+    Returns:
+        A list of file paths for each bin.
     """
 
     # First create a file in the format (abundance, header, seq, quality)
@@ -649,9 +657,6 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
     second_mates_writer = None
 
     curr_abun = None
-    header = None
-    seq = None
-    qual = None
     prev_abun = None
 
     abundance_read_file = open(abundance_read_filename + '.sorted', 'r')
@@ -676,6 +681,7 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
         if prev_abun is None or curr_abun != prev_abun:
             # Setup the writers.
             os.makedirs(output_dir + '/bins/' + curr_abun)
+            paths_to_bins.append(output_dir + '/bins/' + curr_abun + '/')
             first_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_1.fq', 'w')
             second_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_2.fq', 'w')
 
@@ -700,34 +706,44 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
             if not curr_line: break
             curr_tuple = curr_line.split("\t")
 
-        #line1 = abundance_read_file.readline()
-        #line2 = abundance_read_file.readline()
-        #if not curr_line: break
-
         prev_abun = prev_tuple[0]
         curr_abun = curr_tuple[0]
 
-    # for line in abundance_read_file:
-    #     tuple = line.split('\t')
-    #     curr_abun = tuple[0]
-    #     header = tuple[1]
-    #     seq = tuple[2]
-    #     qual = tuple[3]
-    #
-    #     if prev_abun is None or curr_abun != prev_abun:
-    #         # Setup the writers.
-    #         os.makedirs(output_dir + '/bins/' + curr_abun)
-    #         first_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_1.fq', 'w')
-    #         second_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_2.fq', 'w')
-    #
-    #     if header.endswith("/1"):
-    #         first_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
-    #     elif header.endswith("/2"):
-    #         second_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
-    #
-    #     prev_abun = curr_abun
+    return path_to_bins
 
-    # Sometimes the sequence files are missing mates, we need to remove any unpaired sequence.
+
+def run_reapr(options, bin_path, assembly_filename):
+    """ Run the REAPR pipeline on the passed in bin path.
+
+    Args:
+        options: Command line arguments.
+        bin_path: Binned paired reads to run REAPR on.
+        assembly_filename: Assembly FASTA filename.
+    """
+
+    #reapr smaltmap output/double/filtered_assembly.fasta output/double/bins/49/lib_1.fq lib2_fq  test.bam
+    std_err_file = open(bin_path + '/std_err.log','w')
+    call_arr = ['reapr', 'smaltmap',\
+            '-n', options.threads,\
+            assembly_filename,\
+            bin_path + '/lib_1.fq',\
+            bin_path + '/lib_2.fq',\
+            bin_path + '/align.bam']
+    run(call_arr, stderr=std_err_file)
+
+    call_arr = ['reapr', 'pipeline',\
+            assembly_filename,\
+            bin_path + '/align.bam',\
+            bin_path + '/reapr']
+    run(call_arr, stderr=std_err_file)
+
+    call_arr = ['gunzip', bin_path + '/reapr/03.score.errors.gff.gz']
+    run(call_arr)
+
+    if os.path.exists(bin_path + '/reapr/03.score.errors.gff'):
+        results(bin_path + '/reapr/03.score.errors.gff')
+    else:
+        warning("Can't find: " + bin_path + '/reapr/03.score.errors.gff')
 
 
 def generate_summary_files(options, results_filenames, contig_lengths, output_dir):
