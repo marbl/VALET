@@ -678,9 +678,9 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
             second_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_2.fq', 'w')
 
         if header.endswith("/1"):
-            first_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual + '\n')
+            first_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
         elif header.endswith("/2"):
-            second_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual + '\n')
+            second_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual)
 
         prev_abun = curr_abun
 
