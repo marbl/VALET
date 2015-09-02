@@ -642,7 +642,7 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
         tuple = line.split('\t')
 
         if tuple[2] != '*':
-            if int(tuple[1]) % 0x10 == 0:
+            if int(tuple[1]) & 0x10 == 0:
                 seq = tuple[9]
                 quals = tuple[10]
             else:
