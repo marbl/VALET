@@ -204,6 +204,8 @@ def main():
 
         # Run REAPR/mate-pair happiness.
         if options.first_mates and options.second_mates:
+            step("IDENTIFYING PAIRED-READ INCONSISTENCIES")
+
             # First partition the SAM file into bins based on coverage.
             bin_paths = bin_reads_by_coverage(options, sam_output_location, contig_abundances, output_dir)
 
