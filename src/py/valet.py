@@ -56,7 +56,7 @@ def get_options():
     parser.add_option("-o", "--output-dir", dest="output_dir",
                       help="Output directory", default="output")
     parser.add_option("-w", "--window-size", dest="window_size",
-                      help="Sliding window size when determining misassemblies.", default="501")
+                      help="Sliding window size when determining misassemblies.", default="251")
     parser.add_option("-q", "--fastq", dest="fastq_file",
                       default=False, action='store_true',
                       help="if set, input reads are fastq format (fasta by default).")
@@ -212,7 +212,9 @@ def main():
 
             # Run REAPR on each individual bin.
             for bin in bin_paths:
-                run_reapr(options, bin)
+                result = run_reapr(options, bin)
+                if result:
+                    results_filenames.append(result)
 
         # Generate summary files.
         step("SUMMARY")
@@ -809,9 +811,20 @@ def run_reapr(options, bin_path):
     run(call_arr)
 
     if os.path.exists(bin_path + '/reapr/03.score.errors.gff'):
-        results(bin_path + '/reapr/03.score.errors.gff')
+        # Convert the GFF file to bed.
+        with open(bin_path + '/reapr/03.score.errors.gff', 'r') as reapr_gff, \
+                open(bin_path + '/reapr.bed', 'w') as reapr_bed:
+            #C103037 REAPR   Frag_cov        286     345     0.0166667       .       .       Note=Error: Fragment coverage too low;color=15
+            for entry in reapr_gff:
+                tuple = entry.strip().split('\t')
+                if 'Warning' not in tuple[8]:
+                    reapr_bed.write(tuple[0] + '\t' + tuple[3] + '\t' + tuple[4] + '\t' + 'REAPR\n')
+
+        results(bin_path + '/reapr.bed')
+        return bin_path + '/reapr.bed'
     else:
-        warning("Can't find: " + bin_path + '/reapr/03.score.errors.gff')
+        warning("REAPR failed on bin: " + bin_path)
+        return None
 
 
 def generate_summary_files(options, results_filenames, contig_lengths, output_dir):
