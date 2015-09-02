@@ -86,7 +86,7 @@ def get_options():
                       help="Mark region as suspicious if multiple signatures occur within this window size.")
     parser.add_option('-z', "--min-contig-length", dest="min_contig_length", default=1000, type=int,
                       help="Ignore contigs smaller than this length.")
-    parser.add_option('-b', "--ignore-ends", dest="ignore_end_distances", default=200, type=int,
+    parser.add_option('-b', "--ignore-ends", dest="ignore_end_distances", default=250, type=int,
                       help="Ignore flagged regions within b bps from the ends of the contigs.")
     parser.add_option('-k', "--breakpoint-bin", dest="breakpoints_bin", default="50", type=str,
                       help="Bin sized used to find breakpoints.")
@@ -791,21 +791,20 @@ def run_reapr(options, bin_path):
         assembly_filename: Assembly FASTA filename.
     """
 
-    #reapr smaltmap output/double/filtered_assembly.fasta output/double/bins/49/lib_1.fq lib2_fq  test.bam
-    std_err_file = open(bin_path + '/std_err.log','w')
+    std_err_file = open(bin_path + '/std_err.log','a')
     call_arr = ['reapr', 'smaltmap',\
             '-n', options.threads,\
             bin_path + '/contigs.fasta',\
             bin_path + '/lib_1.fq',\
             bin_path + '/lib_2.fq',\
             bin_path + '/align.bam']
-    run(call_arr, stderr=std_err_file)
+    run(call_arr, stdout=std_err_file, stderr=std_err_file)
 
     call_arr = ['reapr', 'pipeline',\
             bin_path + '/contigs.fasta',\
             bin_path + '/align.bam',\
             bin_path + '/reapr']
-    run(call_arr, stderr=std_err_file)
+    run(call_arr, stdout=std_err_file, stderr=std_err_file)
 
     call_arr = ['gunzip', bin_path + '/reapr/03.score.errors.gff.gz']
     run(call_arr)
