@@ -700,6 +700,8 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
             first_mates_writer.write('@' + prev_tuple[1] + '\n' + prev_tuple[2] + '\n+\n' + prev_tuple[3])
             second_mates_writer.write('@' + curr_tuple[1] + '\n' + curr_tuple[2] + '\n+\n' + curr_tuple[3])
 
+            prev_abun = prev_tuple[0]
+
             # Read two new lines.
             prev_line = abundance_read_file.readline()
             if not prev_line: break
@@ -709,6 +711,8 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
 
             prev_tuple = prev_line.split("\t")
             curr_tuple = curr_line.split("\t")
+
+            curr_abun = curr_tuple[0]
         else:
             prev_tuple = curr_tuple
 
@@ -717,8 +721,8 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
             if not curr_line: break
             curr_tuple = curr_line.split("\t")
 
-        prev_abun = prev_tuple[0]
-        curr_abun = curr_tuple[0]
+            prev_abun = prev_tuple[0]
+            curr_abun = curr_tuple[0]
 
     return path_to_bins
 
