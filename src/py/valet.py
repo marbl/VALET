@@ -619,7 +619,8 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
     abundance_read_file = open(abundance_read_filename, 'w')
 
     # Skip the header sequence.
-    line = open(sam_filename, 'r').readline()
+    sam_file = open(sam_filename, 'r')
+    line = sam_file.readline()
     while line.startswith("@"):
         line = sam_file.readline()
 
