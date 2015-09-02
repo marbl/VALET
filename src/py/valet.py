@@ -634,7 +634,7 @@ def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, outp
     with open(assembly_filename, 'r') as assembly:
         for contig in contig_reader(assembly):
             abundance_contig_file.write(str(int(math.ceil(contig_abundances[contig['name'][1:].strip()]))) + '\t' +\
-                    contig['name'][1:].strip() + '\t' + contig['sequence'].strip() + '\n')
+                    contig['name'][1:].strip() + '\t' + ''.join(contig['sequence']).strip() + '\n')
 
     abundance_contig_file.close()
 
@@ -658,7 +658,7 @@ def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, outp
             # Setup the writer.
             contig_writer = open(output_dir + '/bins/' + curr_abun + '/contigs.fasta', 'w')
 
-        contig.writer('>' + tuple[1] + '\n' + tuple[2] + '\n')
+        contig_writer.write('>' + tuple[1] + '\n' + tuple[2])
 
         prev_abun = curr_abun
 
@@ -780,7 +780,7 @@ def bin_reads_by_coverage(options, sam_filename, contig_abundances, output_dir):
     return path_to_bins
 
 
-def run_reapr(options, bin_path, assembly_filename):
+def run_reapr(options, bin_path):
     """ Run the REAPR pipeline on the passed in bin path.
 
     Args:
