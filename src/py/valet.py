@@ -205,11 +205,14 @@ def main():
         # Run REAPR/mate-pair happiness.
         if options.first_mates and options.second_mates:
             # First partition the SAM file into bins based on coverage.
-            bin_paths = bin_reads_by_coverage(sam_output_location, contig_abundances, output_dir)
+            bin_paths = bin_reads_by_coverage(options, sam_output_location, contig_abundances, output_dir)
+
+            # Bin the assembled contigs by coverage.
+            bin_assembly_by_coverage(options, assembly, contig_abundances, output_dir)
 
             # Run REAPR on each individual bin.
             for bin in bin_paths:
-                run_reapr(options, bin, assembly)
+                run_reapr(options, bin)
 
         # Generate summary files.
         step("SUMMARY")
@@ -613,10 +616,60 @@ def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir)
     return breakpoint_dir + 'interesting_bins.bed'
 
 
-def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
+def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, output_dir):
+    """ Bin assembly by their coverages.
+
+    Args:
+        options: Command line options.
+        assembly_filename: Assembly FASTA filename.
+        contig_abundances: Dictionary containing contig_name => abundance.
+        output_dir: Current assembly output directory.
+    """
+
+    # First create a file in the format (abundance, header, seq)
+    abundance_contig_filename = output_dir + '/bins/abun_contig'
+    ensure_dir(abundance_contig_filename)
+    abundance_contig_file = open(abundance_contig_filename, 'w')
+
+    with open(assembly_filename, 'r') as assembly:
+        for contig in contig_reader(assembly):
+            abundance_contig_file.write(str(int(math.ceil(contig_abundances[contig['name']]))) + '\t' +\
+                    contig['name'] + '\t' + contig['sequence'] + '\n')
+
+    abundance_contig_file.close()
+
+    # Sort the contigs by abundance.
+    try:
+        call_arr = ['sort', '-nk1,1', '-k2,2', '-T', './', '--parallel=' + str(options.threads), abundance_contig_filename, '-o', abundance_contig_filename + '.sorted']
+        subprocess.check_call(call_arr)
+    except:
+        call_arr = ['sort', '-nk1,1', '-k2,2', '-T', './', abundance_contig_filename, '-o', abundance_contig_filename + '.sorted']
+        subprocess.call(call_arr)
+
+    prev_abun = None
+    curr_abun = None
+
+    abundance_contig_file = open(abundance_contig_filename + '.sorted', 'r')
+    for line in abundance_contig_file:
+        tuple = line.split('\t')
+        curr_abun = tuple[0]
+
+        if prev_abun is None or curr_abun != prev_abun:
+            # Setup the writer.
+            contig_writer = open(output_dir + '/bins/' + curr_abun + '/contigs.fasta', 'w')
+
+        contig.writer('>' + tuple[1] + '\n' + tuple[2] + '\n')
+
+        prev_abun = curr_abun
+
+    abundance_contig_file.close()
+
+
+def bin_reads_by_coverage(options, sam_filename, contig_abundances, output_dir):
     """ Bin the reads found in the SAM file by their coverages.
 
     Args:
+        options: Command line options.
         sam_filename: Filename of the SAM file containing the sequences.
         contig_abundances: Dictionary containing contig_name => abundance.
         output_dir: Current assembly output directory.
@@ -656,7 +709,7 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
 
     # Sort the abundance file by (1) abundance, (2) first mate, (3) second mate.
     try:
-        call_arr = ['sort', '-nk1,1', '-k2,2', '-T', './', '--parallel=' + str(threads), abundance_read_filename, '-o', abundance_read_filename + '.sorted']
+        call_arr = ['sort', '-nk1,1', '-k2,2', '-T', './', '--parallel=' + str(options.threads), abundance_read_filename, '-o', abundance_read_filename + '.sorted']
         subprocess.check_call(call_arr)
     except:
         call_arr = ['sort', '-nk1,1', '-k2,2', '-T', './', abundance_read_filename, '-o', abundance_read_filename + '.sorted']
@@ -740,14 +793,14 @@ def run_reapr(options, bin_path, assembly_filename):
     std_err_file = open(bin_path + '/std_err.log','w')
     call_arr = ['reapr', 'smaltmap',\
             '-n', options.threads,\
-            assembly_filename,\
+            bin_path + '/contigs.fasta',\
             bin_path + '/lib_1.fq',\
             bin_path + '/lib_2.fq',\
             bin_path + '/align.bam']
     run(call_arr, stderr=std_err_file)
 
     call_arr = ['reapr', 'pipeline',\
-            assembly_filename,\
+            bin_path + '/contigs.fasta',\
             bin_path + '/align.bam',\
             bin_path + '/reapr']
     run(call_arr, stderr=std_err_file)
