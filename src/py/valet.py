@@ -668,6 +668,7 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
     curr_line = abundance_read_file.readline()
     prev_tuple = prev_line.split("\t")
     curr_tuple = curr_line.split("\t")
+    curr_abun = curr_tuple[0]
 
     # Sometimes the sequence files are missing mates, we need to remove any unpaired sequence.
     while True:
