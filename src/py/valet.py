@@ -4,6 +4,7 @@ from subprocess import call
 from optparse import OptionParser
 from tempfile import mkstemp
 import ConfigParser
+import math
 import os
 import random
 import re
