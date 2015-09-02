@@ -615,6 +615,7 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
         contig_abundances: Dictionary containing contig_name => abundance.
     """
 
+    # First create a file in the format (abundance, header, seq, quality)
     abundance_read_filename = output_dir + '/bins/abun_read'
     ensure_dir(abundance_read_filename)
     abundance_read_file = open(abundance_read_filename, 'w')
@@ -632,8 +633,56 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
             abundance_read_file.write(str(int(math.ceil(contig_abundances[tuple[2]]))) + '\t' + tuple[0] + '\t' + tuple[9] + '\t' + tuple[10] + '\n')
 
         line = sam_file.readline()
-
     abundance_read_file.close()
+
+    # Sort the abundance file by (1) abundance, (2) first mate, (3) second mate.
+    try:
+        call_arr = ['sort', '-nk1,1', '-k2,2', '-T', './', '--parallel=' + str(threads), abundance_read_filename, '-o', abundance_read_filename + '.sorted']
+        subprocess.check_call(call_arr)
+    except:
+        call_arr = ['sort', '-nk1,1', '-k2,2', '-T', './', abundance_read_filename, '-o', abundance_read_filename + '.sorted']
+        subprocess.call(call_arr)
+
+    # Write out each read to there correct bin folder.
+    path_to_bins = []
+    first_mates_writer = None
+    second_mates_writer = None
+
+    curr_abun = None
+    header = None
+    seq = None
+    qual = None
+    prev_abun = None
+
+    abundance_read_file = open(abundance_read_filename + '.sorted', 'r')
+    """
+    5       HWUSI-EAS626_102891784:2:90:12172:7648/1        GGTCGTGTTTCATTGGTTAAATCACCAAATCCTTCCATATCCACGATACCACGCATATCTTTTTTCTTTAAAAATTCACGCAACCCATCTTTAACTTCAG    ??90AA:6@?4A??<@???@4.1+64=<63@:??@?@??5EE>EEEA@FFCEE=AE=B@CDDDEBBFFBFFFFFEDFEFFGGFGGGGGGGGGGGGGGGGG
+    5       HWUSI-EAS626_102891784:2:90:12172:7648/2        CTGTAAAATCATCATCTACATTAAAGTAAACAGGATTACCGTCGGCCTTAATACCATATATACCAATCTGATTACCAACACTTGAAATATCGTCTCACTC    GGFGGGGGGGGGGGGGGGGGGGGGEGCGGGGGGGFEFFFD@?@@@EEEAEEEEEE?DDDDEEEEECCB@@@CAACEEEEECA;A9AAA??%%%%%%%%%%
+    5       HWUSI-EAS626_102891784:2:94:12848:7954/1        TTTAAAAATTCACGCAACCCATCTTTAACTTCAGGTTTTACCTCATCATATGTAAAAATCTCATTATTTTCAACAGTAATATTTGAATAATCTTTAGGAC    A?AACE@EEBDAEDDCADAECDECDBDCF@DEEDEEBEFCEGEGGFGGGGFFGGGFFEFFAC@3@GFGGGGGGGGGGGGGGGGFGGGGGGFGEGGGGGGG
+    5       HWUSI-EAS626_102891784:2:94:12848:7954/2        AATGTCTTTTTTAATCGGTTGGCCATTTTCATCTGTTTCAGAGCCATAAACTGGTCGTGTTTCATTGGTTAAATCACCAAATCCTTCCATATCCACGATA    FGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFGGCGGEGGFGDEFADGDDGFDEEEEFEEDGEEEEEEEBDDGDEEEEEDCEBD@?@?@
+    7       HWUSI-EAS626_102891784:1:100:14551:5313/1       TTCTTGCCTGTCTTTAATCCGAANAGCGCCCCTGACCAATCAGAAAAAGCACGCCTGTTGCTTGCCGCAAACTGACTATATAAGTCTTGTG     GGGGGFGGGGGGGGGGGGGGCCC!CCDDDDGGG:GGGDGDGFFFFGGGEGGGEGEFACDFDDEEFEEGEEEECEEEGAEEEEBEBDACBB#
+    7       HWUSI-EAS626_102891784:1:102:10765:10655/1      CAGCAATCCAGTCTTTAACTTCTGGGTGCCATGCAGGATGCGGTATATAAACCTGTCCAGCTTCCCACATTGGAGACACTGACGCCGCACG     GGGGGGGGGGGGGGGGGGGGGGGGAECADEFFFFEGGGGGFGGEEAFFFDFGGGFEGEGEGBEGEGEEEDEE?EBEDEEEBCDBCECB=A#
+    7       HWUSI-EAS626_102891784:1:102:10765:10655/2      GCTTTGCAGTAGCGTCAGGATACATGCGGGACATGGCTCTAATAGCGTCTAGCGTCTCAGTAAAGCTTAAACGCTTGTGGCACCAGTTAGGGCGCAGGTA    >>>?=,?:D?D?CCCBCDEF5BEEEFGDGEFCD?EGGEBGFEGGGGFFGGEGGGFGGGDGFGFGGEEEE?AFFBGFFFFEECAFFGGG=FFFEGGDFGGG
+    """
+    for line in abundance_read_file:
+        tuple = line.split('\t')
+        curr_abun = tuple[0]
+        header = tuple[1]
+        seq = tuple[2]
+        qual = tuple[3]
+
+        if prev_abun is None or curr_abun != prev_abun:
+            # Setup the writers.
+            os.makedirs(output_dir + '/bins/' + curr_abun)
+            first_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_1.fq', 'w')
+            second_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_2.fq', 'w')
+
+        if header.endswith("/1"):
+            first_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual + '\n')
+        elif header.endswith("/2"):
+            second_mates_writer.write('@' + header + '\n' + seq + '\n+\n' + qual + '\n')
+
+        prev_abun = curr_abun
 
 
 def generate_summary_files(options, results_filenames, contig_lengths, output_dir):
