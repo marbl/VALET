@@ -22,6 +22,8 @@ FILE_LIMIT = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
 FNULL = open('/dev/null', 'w')
 COMMANDS_FILE = None
 
+# http://stackoverflow.com/questions/19570800/reverse-complement-dna
+revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N','R':'N','M':'N','Y':'N','S':'N','W':'N','K':'N'}[B] for B in x][::-1])
 
 class BColors:
     HEADER = '\033[95m'
@@ -634,11 +636,20 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
     while line.startswith("@"):
         line = sam_file.readline()
 
+    seq = None
+    quals = None
     while line:
         tuple = line.split('\t')
 
         if tuple[2] != '*':
-            abundance_read_file.write(str(int(math.ceil(contig_abundances[tuple[2]]))) + '\t' + tuple[0] + '\t' + tuple[9] + '\t' + tuple[10] + '\n')
+            if int(tuple[1]) % 0x10 == 0:
+                seq = tuple[9]
+                quals = tuple[10]
+            else:
+                seq = revcompl(tuple[9])
+                quals = tuple[10][::-1]
+
+            abundance_read_file.write(str(int(math.ceil(contig_abundances[tuple[2]]))) + '\t' + tuple[0] + '\t' + seq + '\t' + quals + '\n')
 
         line = sam_file.readline()
     abundance_read_file.close()
@@ -681,7 +692,7 @@ def bin_reads_by_coverage(sam_filename, contig_abundances, output_dir):
         if prev_abun is None or curr_abun != prev_abun:
             # Setup the writers.
             os.makedirs(output_dir + '/bins/' + curr_abun)
-            paths_to_bins.append(output_dir + '/bins/' + curr_abun + '/')
+            path_to_bins.append(output_dir + '/bins/' + curr_abun + '/')
             first_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_1.fq', 'w')
             second_mates_writer = open(output_dir + '/bins/' + curr_abun + '/lib_2.fq', 'w')
 
