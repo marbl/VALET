@@ -633,8 +633,8 @@ def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, outp
 
     with open(assembly_filename, 'r') as assembly:
         for contig in contig_reader(assembly):
-            abundance_contig_file.write(str(int(math.ceil(contig_abundances[contig['name']]))) + '\t' +\
-                    contig['name'] + '\t' + contig['sequence'] + '\n')
+            abundance_contig_file.write(str(int(math.ceil(contig_abundances[contig['name'][1:].strip()]))) + '\t' +\
+                    contig['name'][1:].strip() + '\t' + contig['sequence'].strip() + '\n')
 
     abundance_contig_file.close()
 
