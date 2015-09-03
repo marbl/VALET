@@ -3,19 +3,13 @@ from __future__ import print_function
 from subprocess import call
 from optparse import OptionParser
 from tempfile import mkstemp
-import ConfigParser
 import math
 import os
-import random
 import re
 import shlex
-import shutil
 import subprocess
-import os
 import resource
 import sys
-from optparse import OptionParser
-
 
 BASE_PATH = os.path.dirname(sys.argv[0])[:-len('src/py/')]
 FILE_LIMIT = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
@@ -94,13 +88,9 @@ def get_options():
         '-f', "--orf-file", dest="orf_file", help="gff formatted file containing orfs")
     parser.add_option("--kmer", dest="kmer_length", help="kmer length used for abundance estimation",
                       default="15")
+    parser.add_option("--skip-reapr", dest="skip_reapr", default=False, action='store_true')
 
     (options, args) = parser.parse_args()
-
-    # If a config file is given, read the arguments from there.
-    # if options.config_file:
-    #     config = ConfigParser.ConfigParser()
-    #     config.read(options.config_file)
 
     should_err = False
     if not options.assembly_filenames:
@@ -151,8 +141,7 @@ def main():
         results_filenames = []
 
         # First run Reapr's facheck to check if the filenames are acceptable.
-        facheck_assembly = run_reapr_facheck(assembly, output_dir)
-        results(facheck_assembly)
+        facheck_assembly = assembly if options.skip_reapr else run_reapr_facheck(assembly, output_dir)
 
         # Filter assembled contigs by length.
         step("FILTERING ASSEMBLY CONTIGS LESS THAN " + str(options.min_contig_length) + ' BPs')
@@ -203,7 +192,7 @@ def main():
         results_filenames.append(run_breakpoint_finder(options, assembly, unaligned_dir, outputBreakpointDir))
 
         # Run REAPR/mate-pair happiness.
-        if options.first_mates and options.second_mates:
+        if options.first_mates and options.second_mates and not options.skip_reapr:
             step("IDENTIFYING PAIRED-READ INCONSISTENCIES")
 
             # First partition the SAM file into bins based on coverage.
@@ -248,6 +237,7 @@ def run_reapr_facheck(assembly, output_dir):
     ensure_dir(facheck_assembly)
     call_arr = ["reapr", "facheck", assembly, facheck_assembly]
     run(call_arr)
+    results(facheck_assembly)
     return facheck_assembly + '.fa'
 
 
@@ -264,6 +254,7 @@ def filter_short_contigs(fasta_filename, min_contig_length, filtered_fasta_filen
         A dictionary mapping contig names to lengths.
     """
 
+    ensure_dir(filtered_fasta_filename)
     filtered_assembly_file = open(filtered_fasta_filename, 'w')
     all_contig_lengths = {}
     curr_length = 0
@@ -324,7 +315,6 @@ def run_abundance_by_kmers(options, assembly_filename, output_dir):
             "-e", ".98",
             "-p", options.kmer_pileup_file]
     run(call_arr, coverage_file, abundance_error)
-    #call(call_arr, stdout=coverage_file)
 
     return options.kmer_pileup_file
 
@@ -386,26 +376,12 @@ def run_bowtie2(options, assembly_filename, output_dir, output_sam):
     ensure_dir(unaligned_dir)
     unaligned_file = unaligned_dir + 'unaligned.reads'
 
-    #input_sam_file = output_sam_file
     #read_type = " -f "
     #if options.fastq_file:
     read_type = " -q "
 
     bowtie2_args = ""
     bowtie2_unaligned_check_args = ""
-    # if options.first_mates:
-    #     bowtie2_args = "-a -x " + assembly_index + " -1 " + options.first_mates\
-    #             + " -2 " + options.second_mates + " -p " + options.threads\
-    #             + " --very-sensitive -a " + " --reorder --"\
-    #             + options.orientation + " -I " + options.min_insert_size\
-    #             + " -X " + options.max_insert_size + " --no-mixed" #+ " --un-conc "\
-    #
-    #     bowtie2_unaligned_check_args = "-a -x " + assembly_index + read_type + " -U "\
-    #             + options.first_mates + "," + options.second_mates + " --very-sensitive -a "\
-    #             + " --reorder -p " + options.threads + " --un " + unaligned_file
-    #
-    #
-    # else:
     bowtie2_args = "-a -x " + assembly_index + read_type + " -U "\
                 + options.reads_filenames + " --very-sensitive -a "\
                 + " --reorder -p " + options.threads + " --un " + unaligned_file
@@ -418,22 +394,9 @@ def run_bowtie2(options, assembly_filename, output_dir, output_sam):
     command = "bowtie2 " + bowtie2_args + " -S " + output_sam
     run(shlex.split(command), stderr=FNULL)
 
-    #out_cmd( FNULL.name, FNULL.name,[command])
-
-
-    #args = shlex.split(command)
-    #bowtie_proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=FNULL)
-    #bowtie_output, err = bowtie_proc.communicate()
-
-
     if bowtie2_unaligned_check_args != "":
         command = "bowtie2 " + bowtie2_unaligned_check_args + " -S " + output_sam + "_2.sam"
         run(shlex.split(command), stderr=FNULL)
-
-        #out_cmd( FNULL.name,  FNULL.name, [command])
-        #args = shlex.split(command)
-        #bowtie_proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=FNULL)
-        #bowtie_output, err = bowtie_proc.communicate()
 
     return unaligned_dir
 
@@ -452,14 +415,6 @@ def build_bowtie2_index(index_filename, assembly_filename):
 
     command = "bowtie2-build " + os.path.abspath(assembly_filename) + " " + os.path.abspath(index_filename)
     run(shlex.split(command), stdout=FNULL, stderr=FNULL)
-
-    # Bad workaround.
-    # out_cmd(FNULL.name, FNULL.name, [command])
-
-    #bowtie2_build_proc = subprocess.Popen(command, shell = True, stdout = FNULL, stderr = FNULL)
-    #bowtie_output, err = bowtie2_build_proc.communicate()
-    #bowtie2_build_proc.wait()
-
     return index_filename
 
 
@@ -526,36 +481,25 @@ def run_samtools(options, assembly_filename, output_dir, sam_output_location, wi
     error_file_location = bam_dir + "error.log"
     error_fp = open(error_file_location, 'w+')
 
-    #warning("About to run samtools view to create bam")
-    call_arr = ["samtools", "view", "-bS", sam_output_location]
+    # "-F 0x100" filters out secondary alignments.
+    call_arr = ["samtools", "view", "-F", "0x100", "-bS", sam_output_location]
     run(call_arr, bam_fp, error_fp)
-    #out_cmd(bam_fp.name, error_fp.name, call_arr)
-    #call(call_arr, stdout = bam_fp, stderr = error_fp)
 
-    #warning("About to attempt to sort bam")
     call_arr = ["samtools", "sort", bam_location, sorted_bam_location]
     run(call_arr, stderr=FNULL)
-    #out_cmd( "", FNULL.name, call_arr)
-    #call(call_arr, stderr = FNULL)
 
     coverage_file_dir = output_dir + "/coverage/"
     ensure_dir(coverage_file_dir)
     pileup_file = coverage_file_dir + "mpileup_output.out"
     p_fp = open(pileup_file, 'w')
-
     if with_pileup:
         call_arr = ["samtools", "mpileup", "-C50", "-A", "-f", assembly_filename, sorted_bam_location + ".bam"]
         run(call_arr, p_fp, FNULL)
-        #out_cmd(p_fp.name, FNULL.name, call_arr)
         results(pileup_file)
-        #warning("That command outputs to file: ", pileup_file)
-        #call(call_arr, stdout = p_fp, stderr = FNULL)
 
     if index:
         call_arr = ["samtools", "index", sorted_bam_location + ".bam"]
         run(call_arr, FNULL, FNULL)
-        #out_cmd(FNULL.name, FNULL.name, call_arr)
-        #call(call_arr, stdout = FNULL, stderr = FNULL)
 
     return (bam_location, sorted_bam_location, pileup_file)
 
@@ -575,12 +519,14 @@ def run_depth_of_coverage(options, output_dir, pileup_file):
 
     dp_fp = output_dir + "/coverage/errors_cov.bed"
     abundance_file = options.coverage_file
-    #call_arr = ["src/py/depth_of_coverage.py", "-a", abundance_file, "-m", pileup_file, "-w", options.window_size, "-o", dp_fp, "-g", "-e"]
     call_arr = [os.path.join(BASE_PATH, "src/py/depth_of_coverage.py"), "-m", pileup_file, "-w", options.window_size, "-o", dp_fp, "-g", "-e", "-c", options.threads]
     run(call_arr, stdout=coverage_error, stderr=coverage_error)
-    results(dp_fp)
 
-    return dp_fp
+    coverage_bed = output_dir + "/coverage.bed"
+    run_bedtools_sort(dp_fp, coverage_bed)
+    results(coverage_bed)
+
+    return coverage_bed
 
 
 def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir):
@@ -602,8 +548,6 @@ def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir)
             '-o', breakpoint_dir + 'split_reads/']
 
     run(call_arr, stderr=std_err_file)
-    #out_cmd( "", std_err_file.name, call_arr)
-    #call(call_arr, stderr=std_err_file)
     std_err_file.close()
 
     std_err_file = open(breakpoint_dir + 'std_err.log','w')
@@ -614,10 +558,11 @@ def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir)
             '-c', options.coverage_file,\
             '-p', options.threads]
     run(call_arr, stderr=std_err_file)
-    #out_cmd( "", std_err_file.name,call_arr)
-    #call(call_arr,stderr=std_err_file)
-    results(breakpoint_dir + 'interesting_bins.bed')
-    return breakpoint_dir + 'interesting_bins.bed'
+
+    breakpoint_bed = breakpoint_dir + '../breakpoints.bed'
+    run_bedtools_sort(breakpoint_dir + 'interesting_bins.bed', breakpoint_bed)
+    results(breakpoint_bed)
+    return breakpoint_bed
 
 
 def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, output_dir):
@@ -1018,6 +963,19 @@ def generate_comparison_plot(options, assembly_names):
 
     call_arr = ["Rscript", os.path.join(BASE_PATH, "src/R/compare_assemblies.R"), ','.join(assembly_summary_files), ','.join(assembly_names), options.output_dir + '/comparison_plots']
     run(call_arr, stdout=std_err_file, stderr=std_err_file)
+
+
+def run_bedtools_sort(input, output):
+    """ Run the command 'bedtools sort'.
+
+    Args:
+        input: Input filename.
+        output: Output filename.
+    """
+
+    output_file = open(output, 'w')
+    call_arr = ["bedtools", "sort", "-i", input]
+    run(call_arr, stdout=output_file)
 
 
 def get_contig_abundances(abundance_filename):
