@@ -228,6 +228,8 @@ def main():
             contig_lengths, contig_abundances, final_misassemblies)
         results(output_dir + "/summary.tsv")
 
+        write_igv_batch_script(output_dir)
+
     # Generate comparison plots of all assemblies.
     bold("GENERATING ASSEMBLY COMPARISON PLOTS")
     generate_comparison_plot(options, final_assembly_names)
@@ -988,6 +990,20 @@ def run_bedtools_sort(input, output):
     output_file = open(output, 'w')
     call_arr = ["bedtools", "sort", "-i", input]
     run(call_arr, stdout=output_file)
+
+
+def write_igv_batch_script(output_dir):
+    """ Write IGV batch script to load the assembly.
+
+    Args:
+        output_dir: Base output directory.
+    """
+
+    igv_batch_file = open(output_dir + '/IGV.batch', 'w')
+    igv_batch_file.write("new\ngenome " + output_dir + "/filtered_assembly.fasta\nload " + \
+            output_dir + "/summary.bed\nload " + \
+            output_dir + "/bam/sorted_library.bam")
+    igv_batch_file.close()
 
 
 def get_contig_abundances(abundance_filename):
