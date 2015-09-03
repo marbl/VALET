@@ -76,7 +76,7 @@ def get_options():
                       help="bowtie2 parameter to set the max number of alignments.")
     parser.add_option("-e", "--email", dest="email",
                       help="Email to notify when job completes")
-    parser.add_option("-g", "--min-coverage", dest="min_coverage", type="int", default=0,
+    parser.add_option("-g", "--min-coverage", dest="min_coverage", type="int", default=10,
                       help="Minimum average coverage to run misassembly detection.")
     parser.add_option("-l", "--coverage-multiplier", dest="coverage_multiplier", type=float, default=0.0,
                       help="When binning by coverage, the new high = high + high * multiplier")
@@ -745,6 +745,17 @@ def bin_reads_by_coverage(options, sam_filename, contig_abundances, output_dir):
 
     # Sometimes the sequence files are missing mates, we need to remove any unpaired sequence.
     while True:
+
+        # If we're below the minimum required coverage, ignore the contig.
+        if curr_abun < options.min_coverage:
+            # Only read one new line.
+            curr_line = abundance_read_file.readline()
+            if not curr_line: break
+            curr_tuple = curr_line.split("\t")
+
+            prev_abun = prev_tuple[0]
+            curr_abun = curr_tuple[0]
+            continue
 
         if prev_abun is None or curr_abun != prev_abun:
             # Setup the writers.
