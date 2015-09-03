@@ -658,6 +658,9 @@ def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, outp
         tuple = line.split('\t')
         curr_abun = tuple[0]
 
+        if int(curr_abun) < options.min_coverage:
+            continue
+
         if prev_abun is None or curr_abun != prev_abun:
             # Setup the writer.
             contig_writer = open(output_dir + '/bins/' + curr_abun + '/contigs.fasta', 'w')
@@ -747,7 +750,7 @@ def bin_reads_by_coverage(options, sam_filename, contig_abundances, output_dir):
     while True:
 
         # If we're below the minimum required coverage, ignore the contig.
-        if curr_abun < options.min_coverage:
+        if int(curr_abun) < options.min_coverage:
             # Only read one new line.
             curr_line = abundance_read_file.readline()
             if not curr_line: break
