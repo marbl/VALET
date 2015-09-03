@@ -106,6 +106,11 @@ def get_options():
     if options.first_mates and options.second_mates:
         options.reads_filenames = options.first_mates + ',' + options.second_mates
 
+    # Window size must be odd and non-negative.
+    if int(options.window_size) < 0 or int(options.window_size) % 2 == 0:
+        error("Window size must be odd and non-negative.")
+        exit()
+
     ensure_dir(options.output_dir + '/')
 
     return (options, args)
