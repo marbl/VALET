@@ -92,7 +92,7 @@ def find_coverage_errors_scipy(mpileup_file, output_location, window_size, abund
                 #abundance_dict[prev_contig] = tukey_summary(curr_coverages, window_size)
                 #coverage_meds = scipy.signal.medfilt(np.array(curr_coverages), kernel_size = window_size)
                 coverages_np = np.asarray(curr_coverages)
-                coverage_meds = np.convolve(coverages_np, np.ones((window_size,))/window_size, mode='full')
+                coverage_meds = np.convolve(coverages_np, np.ones((window_size,))/window_size, mode='same')
 
                 i = 0
                 while i < len(coverage_meds):
@@ -158,7 +158,7 @@ def find_coverage_errors_scipy(mpileup_file, output_location, window_size, abund
         #abundance_dict[prev_contig] = tukey_summary(curr_coverages, window_size)
         #coverage_meds = scipy.signal.medfilt(np.array(curr_coverages), kernel_size = window_size)
         coverages_np = np.asarray(curr_coverages)
-        coverage_meds = np.convolve(coverages_np, np.ones((window_size,))/window_size, mode='full')
+        coverage_meds = np.convolve(coverages_np, np.ones((window_size,))/window_size, mode='same')
 
         i = 0
         while i < len(coverage_meds):
