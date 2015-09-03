@@ -50,7 +50,7 @@ def get_options():
     parser.add_option("-o", "--output-dir", dest="output_dir",
                       help="Output directory", default="output")
     parser.add_option("-w", "--window-size", dest="window_size",
-                      help="Sliding window size when determining misassemblies.", default="251")
+                      help="Sliding window size when determining misassemblies.", default="351")
     parser.add_option("-q", "--fastq", dest="fastq_file",
                       default=False, action='store_true',
                       help="if set, input reads are fastq format (fasta by default).")
@@ -202,10 +202,22 @@ def main():
             bin_assembly_by_coverage(options, assembly, contig_abundances, output_dir)
 
             # Run REAPR on each individual bin.
+            reapr_results = []
             for bin in bin_paths:
                 result = run_reapr(options, bin)
                 if result:
-                    results_filenames.append(result)
+                    reapr_results.append(result)
+
+            # Concat all REAPR results and sort them.
+            result_file = open(output_dir + '/breakpoint/reapr.bed', 'w')
+            call_arr = ["cat"]
+            call_arr.extend(reapr_results)
+            run(call_arr, stdout=result_file)
+
+            reapr_bed = output_dir + '/reapr.bed'
+            run_bedtools_sort(result_file.name, reapr_bed)
+            results(reapr_bed)
+            results_filenames.append(result_file.name)
 
         # Generate summary files.
         step("SUMMARY")
