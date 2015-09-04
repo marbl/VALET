@@ -50,7 +50,7 @@ def get_options():
     parser.add_option("-o", "--output-dir", dest="output_dir",
                       help="Output directory", default="output")
     parser.add_option("-w", "--window-size", dest="window_size",
-                      help="Sliding window size when determining misassemblies.", default="351")
+                      help="Sliding window size when determining misassemblies.", default="501")
     parser.add_option("-q", "--fastq", dest="fastq_file",
                       default=False, action='store_true',
                       help="if set, input reads are fastq format (fasta by default).")
@@ -76,7 +76,7 @@ def get_options():
                       help="When binning by coverage, the new high = high + high * multiplier")
     parser.add_option("-s", "--min-suspicious", dest="min_suspicious_regions", default=2, type=int,
                       help="Minimum number of overlapping flagged miassemblies to mark region as suspicious.")
-    parser.add_option("-d", "--suspicious-window-size", dest="suspicious_window_size", default=2000, type=int,
+    parser.add_option("-d", "--suspicious-flank-size", dest="suspicious_flank_size", default=1000, type=int,
                       help="Mark region as suspicious if multiple signatures occur within this window size.")
     parser.add_option('-z', "--min-contig-length", dest="min_contig_length", default=1000, type=int,
                       help="Ignore contigs smaller than this length.")
@@ -228,6 +228,12 @@ def main():
         step("SUMMARY")
         final_misassemblies = generate_summary_files(options, results_filenames, contig_lengths, output_dir)
         results(output_dir + "/summary.bed")
+
+        result = find_suspicious_regions(options, output_dir + "/summary.bed", output_dir)
+        # Was the BED file emtpy? If so, created an empty suspicious.bed file.
+        if not result:
+            open(output_dir + "/suspicious.bed", 'w').close()
+        results(output_dir + "/suspicious.bed")
 
         generate_summary_table(output_dir + "/summary.tsv", all_contig_lengths, \
             contig_lengths, contig_abundances, final_misassemblies)
@@ -853,6 +859,51 @@ def generate_summary_files(options, results_filenames, contig_lengths, output_di
 
     summary_file.close()
     return final_misassemblies
+
+
+def find_suspicious_regions(options, bed_filename, output_dir):
+    """ Find regions that overlap and contain different mis-assembly signatures.
+
+    Args:
+        options: Command line arguments.
+        bed_filename: BED file to find suspicious regions.
+        output_dir: Output directory of current assembly.
+
+    Returns:
+        True if the bed_filename parameter contains any entries.
+    """
+
+    # bedtools sort -i - | bedtools merge -d 1000 -o distinct -c 4 -d 1000
+    with open(bed_filename, 'r') as bed_file:
+        # Truncate all BED entries down to 4 fields.
+        regions = []
+        for line in bed_file:
+            regions.append(line.strip().split()[0:4])
+
+        if len(regions) <= 0:
+            return False
+        regions.sort(key = lambda region: (region[0], int(region[1]), int(region[2])))
+
+        intermediate_bed_file = open(output_dir + "/tmp.bed", 'w')
+        intermediate_bed_file.write('\n'.join(['\t'.join(region) for region in regions]))
+        intermediate_bed_file.close()
+
+        # Merge the BEDfile.
+        merged_bed_file = open(output_dir + '/tmp.merged.bed','w')
+        call_arr = ['bedtools', 'merge',\
+                '-i', intermediate_bed_file.name,\
+                '-d', str(options.suspicious_flank_size), '-o', 'distinct', '-c', '4']
+        run(call_arr, stdout=merged_bed_file)
+        merged_bed_file.close()
+
+        # Only save flagged regions that meet the minimum number of signatures.
+        with open(merged_bed_file.name, 'r') as merged_file,\
+                open(output_dir + "/suspicious.bed", 'w') as suspicious_file:
+            for entry in merged_file:
+                if len(entry.split()[3].split(',')) >= options.min_suspicious_regions:
+                    suspicious_file.write(entry)
+
+    return True
 
 
 def generate_summary_table(table_filename, all_contig_lengths, filtered_contig_lengths, contig_abundances, misassemblies, orf=False):
