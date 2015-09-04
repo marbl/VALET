@@ -6,6 +6,8 @@ VALET requires the following tools to function correctly.
 * [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml) (Tested with version 2.2.4)
 * [samtools](http://www.htslib.org) (Tested with version 1.2)
 * [bedtools](http://bedtools.readthedocs.org/en/latest/) (Tested with version 2.24.0)
+* Python2 (Tested with 2.7.9)
+* [numpy](http://www.numpy.org) (Tested with version 1.9.2)
 * [REAPR](https://www.sanger.ac.uk/resources/software/reapr/) (*OPTIONAL: REAPR usage can be disabled with --skip-reapr argument*)
 
 Please note, if REAPR throws an error, then you need to install the following PERL libraries:
