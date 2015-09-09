@@ -21,7 +21,7 @@ Please note, if REAPR throws an error, then you need to install the following PE
 ## Installing VALET
 Once the repository has been cloned, to install the required tools run the command:
 ```
-git clone https://github.com/jgluck/VALET.git
+git clone https://github.com/cmhill/VALET.git
 cd VALET/
 
 # Let your shell know where to find the VALET pipeline.
