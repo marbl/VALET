@@ -8,6 +8,7 @@ VALET requires the following tools to function correctly.
 * [bedtools](http://bedtools.readthedocs.org/en/latest/) (Tested with version 2.24.0)
 * Python2 (Tested with 2.7.9)
 * [numpy](http://www.numpy.org) (Tested with version 1.9.2)
+* [scipy](http://www.scipy.org/) (Tested with version ???)
 * [REAPR](https://www.sanger.ac.uk/resources/software/reapr/) (*OPTIONAL: REAPR usage can be disabled with --skip-reapr argument*)
 
 Please note, if REAPR throws an error, then you need to install the following PERL libraries:
@@ -141,7 +142,7 @@ Before you continue, make sure the following tools are installed:
 * GNU tools:
     * **wget** (can also use **curl**)
     * **tar**
-* **Integrative Genomics Viewer** (http://www.broadinstitute.org/igv/home).  Any other genome browser that accepts BAM/SAM alignments and can overlay GFF files are acceptable.
+* **Integrative Genomics Viewer** (http://www.broadinstitute.org/igv/home).  Other genome browsers that accepts BAM/SAM alignments and can overlay GFF files are acceptable.
 
 ### Downloading HMP sample SRS014465
 ```
