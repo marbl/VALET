@@ -53,19 +53,22 @@ class ReadsSplitter:
             h2 = read[2].strip()
             read_quality = read[3].strip()
 
+            # 
             l = len(read_contents)
-            l_1 = l/2
-            l_2 = l - l_1
-            #left
+            l_1 = int(l / 3)
+            l_2 = int(l - l_1)
+            
+            # left
             h1_1 = h1 + "/1\n"
             read_contents_1 =  read_contents[0:l_1] + "\n"
             h2_1 = h2 + "/1\n"
             read_quality_1 = read_quality[0:l_1] + "\n"
-            #right
+            
+            # right
             h1_2 = h1 + "/2\n"
-            read_contents_2 = read_contents[l_1:]+ "\n"
+            read_contents_2 = read_contents[l_2:]+ "\n"
             h2_2 = h2 + "/2\n"
-            read_quality_2 = read_quality[l_1:] + "\n"
+            read_quality_2 = read_quality[l_2:] + "\n"
 
             r_o_1.write(h1_1)
             r_o_1.write(read_contents_1)
