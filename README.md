@@ -142,8 +142,7 @@ Before you continue, make sure the following tools are installed:
 * GNU tools:
     * **wget** (can also use **curl**)
     * **tar**
-* **Integrative Genomics Viewer** (http://www.broadinstitute.org/igv/home).  Other genome browsers that accepts BAM/SAM alignments and can overlay GFF files are acceptable.
-
+* **Integrative Genomics View
 ### Downloading HMP sample SRS014465
 ```
 mkdir samples
