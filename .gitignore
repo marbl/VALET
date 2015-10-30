@@ -84,3 +84,6 @@ target/
 *.mtc1
 *.out
 *.synctex.gz
+
+## results directory
+output/*
