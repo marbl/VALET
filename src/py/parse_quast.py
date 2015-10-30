@@ -196,13 +196,14 @@ def main():
     gff_misassembly = None
     prev_query_misassembly = None
 
+    comparison_results = []
     for ref_misassembly in ref_misassemblies:
         found_misassembly = False
 
         start, end = get_start_end_interval(ref_misassembly[1], gff_misassemblies, start, end)
         #print ref_misassembly
         #print 'start, end:\t' + str(start) + '\t' + str(end)
-
+        
         for index in xrange(start, end):# len(gff_misassemblies)):
             gff_misassembly = gff_misassemblies[index]
             #for gff_misassembly in gff_misassemblies:
@@ -211,13 +212,14 @@ def main():
             #print ref_misassembly,
             #print '\tWITH\t',
             #print gff_misassembly
-
+            
             if ref_misassembly[1] == gff_misassembly[1]:
                 if getOverlap([ref_misassembly[2] - options.offset, ref_misassembly[3] + options.offset], \
                         [gff_misassembly[2], gff_misassembly[3]]) >= 0:
-                    print ref_misassembly
-                    print gff_misassembly
-                    print '****'
+                    comparison_results.append("\t".join(map(str,ref_misassembly)) +"\t" + "\t".join(map(str,gff_misassembly)))
+                    #print ref_misassembly
+                    #print gff_misassembly
+                    #print '****'
 
                     if (gff_misassembly[1]  + '_' + str(gff_misassembly[2]) + '_' + str(gff_misassembly[3])) != prev_query_misassembly:
                         query_misassembly_count += 1
@@ -240,12 +242,19 @@ def main():
 
 
     counter = Counter(elem[0] for elem in ref_misassemblies)
-    print 'Ref misassemblies found:\t' + str(int(ref_misassembly_count)) + '\t' + str(len(ref_misassemblies)) + '\t' + str(float(ref_misassembly_count)/len(ref_misassemblies))
-    print 'Extensive misassemblies found:\t' + str(float(extensive_misassembly_count)) + '\t' + str(counter['extensive']) + '\t' + str(float(extensive_misassembly_count)/counter['extensive'])
-    print 'Local missed_misassemblies found:\t' + str(float(local_misassembly_count)) + '\t' + str(counter['local']) + '\t' + ("0" if counter['local'] == 0 else str(float(local_misassembly_count)/counter['local']))
-    print 'Valid query misassemblies:\t' + str(float(query_misassembly_count)/len(gff_misassemblies))
-    print 'False positive rate:\t' + str(len(gff_misassemblies) - int(query_misassembly_count)) + '\t' + str(len(gff_misassemblies)) + '\t' + str((len(gff_misassemblies) - float(query_misassembly_count))/len(gff_misassemblies))
-                
+    print "## VALET-QUAST Comparison output"
+    print "## Comparison summary"
+    print '## Ref misassemblies found:\t' + str(int(ref_misassembly_count)) + '\t' + str(len(ref_misassemblies)) + '\t' + str(float(ref_misassembly_count)/len(ref_misassemblies))
+    print '## Extensive misassemblies found:\t' + str(float(extensive_misassembly_count)) + '\t' + str(counter['extensive']) + '\t' + str(float(extensive_misassembly_count)/counter['extensive'])
+    print '## Local missed_misassemblies found:\t' + str(float(local_misassembly_count)) + '\t' + str(counter['local']) + '\t' + ("0" if counter['local'] == 0 else str(float(local_misassembly_count)/counter['local']))
+    print '## Valid query misassemblies:\t' + str(float(query_misassembly_count)/len(gff_misassemblies))
+    print '## False positive rate:\t' + str(len(gff_misassemblies) - int(query_misassembly_count)) + '\t' + str(len(gff_misassemblies)) + '\t' + str((len(gff_misassemblies) - float(query_misassembly_count))/len(gff_misassemblies))
+
+    print "## Q_ indicates quast misassembly calls"
+    print "## V_ indicates VALET missassembly calls"
+    print "## Type - type of error call, Scaffold - scaffold name, Start - start position of candidate misassembly, End - end position of candidate misassembly"
+    print "Q_Type\tQ_Scaffold\tQ_Start\tQ_End\tV_Type\tV_Scaffold\tV_Start\tV_End"
+    print "\n".join(comparison_results)
 
 
 if __name__ == '__main__':
