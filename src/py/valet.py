@@ -580,13 +580,17 @@ def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir)
     run(call_arr, stderr=std_err_file)
     std_err_file.close()
 
+    read_type = "-q"
+    if options.fasta_file:
+        read_type = "-f"
     std_err_file = open(breakpoint_dir + 'std_err.log','w')
     call_arr = [os.path.join(BASE_PATH, 'src/py/breakpoint_finder.py'),\
             '-a', assembly_filename,\
             '-r', breakpoint_dir + 'split_reads/',\
             '-b', options.breakpoints_bin, '-o', breakpoint_dir,\
             '-c', options.coverage_file,\
-            '-p', options.threads]
+            '-p', options.threads,\
+            read_type]
     run(call_arr, stderr=std_err_file)
 
     breakpoint_bed = breakpoint_dir + '../breakpoints.bed'
