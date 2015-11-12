@@ -18,6 +18,7 @@ class BreakpointFinder:
         self.bin_contents = {}
         self.inverse_bin_contents = {}
         self.surviving_bins = {}
+        self.fasta_file = False
         self.getOptions()
         self.base_path = os.path.dirname(sys.argv[0])[:-len("/src/py")]
         self.set_locations()
@@ -25,7 +26,6 @@ class BreakpointFinder:
         self.contig_lengths = {}
         self.average_read_length = 0
         self.number_of_reads = 0
-        self.fasta_file = False
 
     def set_locations(self):
         #self.bowtie_dir = os.path.join(self.base_path, "bin/bowtie2-2.2.2/")
