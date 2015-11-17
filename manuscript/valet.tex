@@ -43,7 +43,7 @@ Reference-based methods use a collection of, often manually curated, reference g
 QUAST~\citep{gurevich2013quast} is a reference based method that identifies mis-assemblies and structural variants in an assembly relative to a user provided reference genome.
 QUAST leverages existing methods (Plantagora~\citep{barthelson2011plantagora},
 GeneMark.hmm~\citep{lukashin1998genemark}, GlimmerHMM~\citep{majoros2004tigrscan}) and quality metrics (GAGE~\citep{salzberg2011gage}).
-Though QUAT is able to calculate a number of quality metrics, such as __ADD Examples__, without a reference genome, these metrics only provide information about the overall quality of the assembly not assembly accuracy.
+Though QUAT is able to calculate a number of quality metrics, such as \emph{ADD Examples}, without a reference genome, these metrics only provide information about the overall quality of the assembly not assembly accuracy.
 % QUAST uses the Plantagora’s definition of a mis-assembly,
 % i.e., a mis-assembly breakpoint is defined as a position in the assembled contigs where (1) the left flanking
 % sequence aligns over 1kb away from right flanking sequence on the reference, or (2) the sequences overlap by
@@ -66,7 +66,7 @@ Although all the above-mentioned tools were designed to work on single genomes, 
 QUAST requires reference genomes, which are simply not available for most metagenomic samples.
 Furthermore, if the \emph{correct} reference strain is not available and the genome of a related strain is used, then QUAST may erroneously flag correct and true biological differences between the reference and sequenced strain as mis-assemblies.
 The \emph{de novo} tools REAPR and amosvalidate rely on global uniform sequence coverage to flag regions as potential mis-assemlies.
-Due to the variability in abundance of individual strains within a sequenced sample, the coverage between contigs in a metagenome assembly will also vary __REF__.
+Due to the variability in abundance of individual strains within a sequenced sample, the coverage between contigs in a metagenome assembly will also vary \emph{REF}.
 Assuming uniform coverage will cause these tools to erroneously flag regions as mis-assembled.
 
 Here, we detail how to modify the constraints of existing tools to allow them to work with metagenomic assemblies.
@@ -138,12 +138,12 @@ The \emph{sister} reads were aligned independently to the reference genome.
 We then partitioned the assembly into bins (50 bp by default) and record which bins correspond to the sister reads.
 If we find a pair of bins that contain at least two sets of \textit{sister} reads, we flag it as a canidate breakpoint.
 
+%%%%%%%%%%%%%%%%%%%%%%%%% Need to add additional text
 \begin{figure}[tb!]
 \begin{center}
 \includegraphics[width=3in]{figures/valet_pipeline}
 \end{center}
 \caption[valet_pipeline]{Digram of the VALET pipeline.}
-%%%%%%%%%%%%%%%%%%%%%%%%% Need to add additional text
 \label{fig:valet_pipeline}
 \end{figure}
 
@@ -157,7 +157,7 @@ If we find a pair of bins that contain at least two sets of \textit{sister} read
 
 \subsection{Comparing multiple assemblies}
 
-We visualize the quality of an assembly by recording the number of errors accumulated as we add contigs in decreasing order of length using a Frequency Response Curve (FRC) plot __REF__.
+We visualize the quality of an assembly by recording the number of errors accumulated as we add contigs in decreasing order of length using a Frequency Response Curve (FRC) plot \emph{REF}.
 This allows for quick visual comparison a set of metagenomic assemblies.
 
 
@@ -184,7 +184,7 @@ The excluding regions without multiple mis-assembly signatures may lead to addit
 \includegraphics[width=.75\textwidth]{figures/hmp_plasmid}
 \end{center}
 \caption[hmp_plasmid]{An example suspicious region flagged by VALET in the HMP assembly of of a Vaginal introitus sample (SRS014465) from the Human Microbiome Project~\citep{human2012structure}.}
-\label{fig:valet_igv}
+\label{fig:hmp_plasmid}
 \end{figure*}
 
 
@@ -195,7 +195,7 @@ Using VALET, we can compare the accumulated predicted error versus cumulative as
 From this plot we can observe that the HMP assembly is accumulating errors at the lowest rate compared to the other assemblers.
 
 The suspicious regions flagged by VALET combined with the IGV support provide researchers with a powerful starting point in their mis-assembly investigation.
-For example, lets look at one of the suspicious regions flagged in the HMP assembly (Figure \ref{fig:valet_igv}.
+For example, lets look at one of the suspicious regions flagged in the HMP assembly (Figure \ref{fig:hmp_plasmid}.
 VALET flags a 1.7 kbp high coverage region flanked by breakpoints.
 This region BLASTs~\citep{BLAST} to \emph{Lactobacillus amylovorus} GRL 1118 plasmid2 (CP002611.1).
 The right flanking region of the contig from positions 5,362 to 10,839 aligns to \emph{Lactobacillus crispatus} ST1, strain ST1 (FN692037.1) with 98\% similarity.
