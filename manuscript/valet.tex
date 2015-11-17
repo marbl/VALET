@@ -24,8 +24,8 @@ Maryland, College Park, Maryland, 20742 USA.}
 \section{Summary:}
 %Metagenomic assembly is often more challenging than single genome assembly due to the presence of intrapopulational variations, greatly varying organism abundances, and conserved genomic regions between closely-related species.
 Existing methods for detecting mis-assemblies rely on the existence of reference genomes, which are not always available.
-Here, we present VALET, the first \emph{de novo} pipeline for detecting mis-assemblies in metagenomic assemblies.
-VALET flags regions in the assembly that contain inconsistencies between the sequence generation process and the assembled region.
+Here, we present VALET, the first \emph{de novo} pipeline for detecting assembly erros in metagenomic assemblies.
+VALET flags regions in the assembly containing inconsistencies between sequence generation process and the assembled region.
 \section{Availability:}
 https://github.com/cmhill/VALET
 \section{Contact:} \href{cmhill@umiacs.umd.edu}{cmhill@umiacs.umd.edu}
@@ -35,14 +35,15 @@ https://github.com/cmhill/VALET
 %Metagenomics is characterizing the environment around us.
 
 Genome assembly of single organisms is made difficult due to the presence of sequencing errors and repeats.
-This difficulty is compounded in metagenomic samples due to the addition of varying organism abundances, intrapopulational variations, and conserved genomic regions between closely-related species.
-Since many downstream applications rely on these assembled genomes, it is critical that the assembly is error-free.
-Existing methods for finding mis-assemblies have primarily focused on single genome assembly and fall into two categories: reference-based and \emph{de novo} evaluation.
+This difficulty is compounded in metagenomic samples due to varying organism abundances, intrapopulational variations, and conserved genomic regions between closely-related species.
+Since many downstream applications rely on metagenome assemblies, it is critical that the assembly is error-free.
+Existing methods for finding mis-assemblies primarily focus on single genome assemblies and fall into two categories: reference-based and \emph{de novo} evaluation.
 
-Reference-based methods rely on having a collection of, often manually curated, reference genomes, while \emph{de novo} methods look for inconsistencies between characteristics of the data generation process and the resulting assembly.
-QUAST~\citep{gurevich2013quast} is a tool that can identify mis-assemblies and structural variants when provided with a reference genome.
+Reference-based methods use a collection of, often manually curated, reference genomes, while \emph{de novo} methods look for inconsistencies between characteristics of the data generation process and the resulting assembly.
+QUAST~\citep{gurevich2013quast} is a reference based method that identifies mis-assemblies and structural variants in an assembly relative to a user provided reference genome.
 QUAST leverages existing methods (Plantagora~\citep{barthelson2011plantagora},
 GeneMark.hmm~\citep{lukashin1998genemark}, GlimmerHMM~\citep{majoros2004tigrscan}) and quality metrics (GAGE~\citep{salzberg2011gage}).
+Though QUAT is able to calculate a number of quality metrics, such as __ADD Examples__, without a reference genome, these metrics only provide information about the overall quality of the assembly not assembly accuracy.
 % QUAST uses the Plantagora’s definition of a mis-assembly,
 % i.e., a mis-assembly breakpoint is defined as a position in the assembled contigs where (1) the left flanking
 % sequence aligns over 1kb away from right flanking sequence on the reference, or (2) the sequences overlap by
@@ -51,12 +52,14 @@ GeneMark.hmm~\citep{lukashin1998genemark}, GlimmerHMM~\citep{majoros2004tigrscan
 \emph{De novo} techniques for detecting mis-assemblies in single genomes rely on looking for inconsistencies between the sequence generation process and the resulting assembly.
 In other words, given a model of the sequencing process, could the sequences have been generated if the assembly was the truth.
 Regions of the assembly that do not meet these assumptions are signatures of potential mis-assemblies.
-One assumption is that the sequence generation process is roughly uniform, i.e., sequences starting at any position have equal probability.
-Substantially divergent coverage may indicate mis-assembly.
-If the sequences are paired-end or mate-pair then additional constraints based on insert size can be used.
+One assumption used to identify potential mis-assemblies is that the sequence generation process is that roughly uniform due to equal probability of a sequence starting at any postion, resulting in uniform coverage.
+Therefore, substantially divergent coverage may indicate mis-assembly.
+A second assumption is that the DNA sequence is a read originates from a contigous region of the genome.  An indicator of a potential mis-assembly is if two ends of a reads align to different regions of the assemby.
+If the sequences are paired-end or mate-pair then additional assumptions about the sequence generation process based on insert size and read pair orientation can be used in detecting potential mis-assemblies.
 
-Amosvalidate~\citep{amosvalidate2008} is a \emph{de novo} pipeline for detecting mis-assemblies that incorporates the above constraints.
-As mentioned in the previous chapter, REAPR~\citep{hunt2013reapr} is a tool that leverages insert size constraints and evaluates the accuracy of the assembly using read-pair coverage.
+__PICK UP REVISIONS HERE__
+
+Amosvalidate~\citep{amosvalidate2008} is a \emph{de novo} pipeline for detecting mis-assemblies incorporating the above constraints. REAPR~\citep{hunt2013reapr} is a tool that leverages insert size constraints and evaluates the accuracy of the assembly using read-pair coverage.
 REAPR determines the fragment coverage by first independently aligning the read-pairs to the assembly.
 A fragment is defined as the distance from the end points of proper read-pairs (those that are determined to have correct orientation and separated by the correct distance).
 REAPR is able to find base-level errors by comparing the fragment coverage of a given base with the theoretical coverage.
@@ -65,7 +68,7 @@ Although all the above-mentioned tools were designed to work on single genomes, 
 QUAST relies on the existence of reference genomes, which are simply not available for most metagenomic samples.
 Furthermore, if the \emph{correct} reference strain is not available, then QUAST may erroneously flag correct and biologically novel sequence as mis-assembled.
 The \emph{de novo} tools REAPR and amosvalidate rely on global uniform sequence coverage to flag regions.
-In previous chapters, we have shown that contigs within the metagenomic assemblers vary widely in abundances.
+Contigs within the metagenomic assemblers vary widely in abundances __REF__.
 Assuming uniform coverage will cause these tools to erroneously flag regions as mis-assembled.
 
 Here, we detail how to modify the constraints of existing tools to allow them to work with metagenomic assemblies.

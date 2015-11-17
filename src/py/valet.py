@@ -110,7 +110,6 @@ def get_options():
     if int(options.window_size) < 0 or int(options.window_size) % 2 == 0:
         error("Window size must be odd and non-negative.")
         exit()
-
     ensure_dir(options.output_dir + '/')
 
     return (options, args)
@@ -139,6 +138,7 @@ def main():
 
         # Create the assembly output directory.
         output_dir = options.output_dir + '/' + assembly_name
+        assert not os.path.isdir(output_dir), "Directory: %s exists, either provide new assembly name or delete directory." % d
         ensure_dir(output_dir)
 
         bold("PROCESSING ASSEMBLY: " + str(assembly_name) + ' (' + assembly + ')')

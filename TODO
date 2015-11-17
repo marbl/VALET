@@ -1,0 +1,58 @@
+#VALET-Plans
+* 9/30/2015 fixed bug with existing output directory
+    - may want to add a "--force" argument to overwrite existing results directories
+* Documentation
+    - for test example
+        + in readme add description of columns in results files
+        + add reference for FRC curve figure
+    - use cases
+        + evaluation of a single metagenome assembly 
+        + evaluating a set of assemblies
+* optimizing parameters to reduce false discovery rates
+    - Approach
+        * go through results files and identify specific contigs for in-depth evaluation
+            * mock community - should all be assembly errors, check for similarity between reference genomes
+            * synthetic community - check alignment file for evidence of errors
+        - characterize different types of errors - repeats, relocation, breakpoint ect.
+            - VALET quast comparison results in `less /cbcb/project2-scratch/cmhill/metagenomes/mock/results/reference.suspicious.results`
+        - read QUAST to evaluate method
+        - read simulated dataset paper
+    - Data and Results
+        - using HMP Mock community data for validation  Bioproject - PRJNA48475  
+            - perform assembly using metAMOS
+            - align contigs processed by valet to whole genome assemblies to identify true errors
+            - work out benchmarking methods
+        - Chris's simulated datasets
+            + data `/cbcb/project2-scratch/cmhill/metagenomes`
+            + results `/cbcb/project2-scratch/cmhill/VALET2/mock_4321`
+            + `run_mock.sh` used for genome assembly, `run_mock_valet.sh` - processing assemblies, `quast_pipeline.sh` running quast and comparing results to valet, `parse_quast.py` in `VALET/src/py` 
+        - Shakya synthetic datasets
+            + data `/cbcb/project2-scratch/sergek/metagenomes/run1/Assembly/out`
+            + results `/cbcb/project2-scratch/cmhill/VALET-repo/synthetic_default`
+    
+    
+
+
+
+* Notes on simulated data - mock_4321
+    - generated using defaults for wgsim, help info from github download https://github.com/lh3/wgsim/commit/a12da3375ff3b51a5594d4b6fa35591173ecc229, repo not updated in 3 years.
+```
+Program: wgsim (short read simulator)
+Version: 0.3.1-r13
+Contact: Heng Li <lh3@sanger.ac.uk>
+
+Usage:   wgsim [options] <in.ref.fa> <out.read1.fq> <out.read2.fq>
+
+Options: -e FLOAT      base error rate [0.020]
+         -d INT        outer distance between the two ends [500]
+         -s INT        standard deviation [50]
+         -N INT        number of read pairs [1000000]
+         -1 INT        length of the first read [70]
+         -2 INT        length of the second read [70]
+         -r FLOAT      rate of mutations [0.0010]
+         -R FLOAT      fraction of indels [0.15]
+         -X FLOAT      probability an indel is extended [0.30]
+         -S INT        seed for random generator [-1]
+         -A FLOAT      disgard if the fraction of ambiguous bases higher than FLOAT [0.05]
+         -h            haplotype mod
+```
