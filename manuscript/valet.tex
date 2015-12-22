@@ -6,12 +6,17 @@
 \firstpage{1}
 
 \title[VALET]{VALET: \emph{de novo} pipeline for finding metagenomic mis-assemblies}
-\author[Hill \textit{et~al}]{Christopher Michael Hill\,$^{1,2,*}$, Jonathan Gluck\,$^{1}$, Victoria Cepeda\,$^{1,2}$, Matheiu Almedia\,$^{2}$, Sergey Koren\,$^{1,2}$, Atif Memon\,$^{1}$, and Mihai Pop\,$^{1,2}$\footnote{to whom correspondence should be addressed}}
-\address{$^{1}$Department of Computer Science,
+\author[Hill \textit{et~al}]{Christopher Michael Hill\,$^{1,2,*}$, Nathan D. Olson\,$^{1,2,3}$, Jonathan Gluck\,$^{1}$, Victoria Cepeda\,$^{1,2}$, Matheiu Almedia\,$^{2}$, Sergey Koren\,$^{1,2}$, Atif Memon\,$^{1}$, and Mihai Pop\,$^{1,2}$\footnote{to whom correspondence should be addressed}}
+\address{
+$^{1}$Department of Computer Science,
 University of Maryland, College Park, Maryland, 20742
-USA\\ $^{2}$ Center
-for Bioinformatics and Computational Biology, University of
-Maryland, College Park, Maryland, 20742 USA.}
+USA\\ 
+$^{2}$ Center for Bioinformatics and Computational Biology, 
+University of Maryland, College Park, Maryland, 20742 USA.\\
+$^{3}$ Biosystems and Biomaterials Division, Material Measurement Laboratory
+ National Institute of Standards and Technology, Gaithersburg, Maryland, 20899 USA
+}
+
 
 \history{Received on XXXXX; revised on XXXXX; accepted on XXXXX}
 
@@ -43,7 +48,7 @@ Reference-based methods use a collection of, often manually curated, reference g
 QUAST~\citep{gurevich2013quast} is a reference based method that identifies mis-assemblies and structural variants in an assembly relative to a user provided reference genome.
 QUAST leverages existing methods (Plantagora~\citep{barthelson2011plantagora},
 GeneMark.hmm~\citep{lukashin1998genemark}, GlimmerHMM~\citep{majoros2004tigrscan}) and quality metrics (GAGE~\citep{salzberg2011gage}).
-Though QUAT is able to calculate a number of quality metrics, such as \emph{ADD Examples}, without a reference genome, these metrics only provide information about the overall quality of the assembly not assembly accuracy.
+Though QUAST is able to calculate a number of quality metrics, such as \emph{ADD Examples}, without a reference genome, these metrics only provide information about the overall quality of the assembly not assembly accuracy.
 % QUAST uses the Plantagora’s definition of a mis-assembly,
 % i.e., a mis-assembly breakpoint is defined as a position in the assembled contigs where (1) the left flanking
 % sequence aligns over 1kb away from right flanking sequence on the reference, or (2) the sequences overlap by
@@ -54,7 +59,7 @@ In other words, given a model of the sequencing process, could the sequences hav
 Regions of the assembly that do not meet these assumptions are signatures of potential mis-assemblies.
 One assumption used to identify potential mis-assemblies is that the sequence generation process is that roughly uniform due to equal probability of a sequence starting at any postion, resulting in uniform coverage.
 Therefore, substantially divergent coverage may indicate mis-assembly.
-A second assumption is that a read originates from a contigous region of the genome.  An indicator of a potential mis-assembly is if two ends of a reads align to different regions of the assemby.
+A second assumption is that a read originates from a contiguous region of the genome.  An indicator of a potential mis-assembly is if two ends of a reads align to different regions of the assembly.
 If the sequences are paired-end or mate-pair then additional assumptions about the sequence generation process based on insert size and read pair orientation can be used in detecting potential mis-assemblies.
 
 Amosvalidate~\citep{amosvalidate2008} is a \emph{de novo} pipeline for detecting mis-assemblies that applies the above constraints. REAPR~\citep{hunt2013reapr} is a tool that leverages insert size constraints and evaluates the accuracy of the assembly using read-pair coverage.
@@ -138,22 +143,13 @@ The \emph{sister} reads were aligned independently to the reference genome.
 We then partitioned the assembly into bins (50 bp by default) and record which bins correspond to the sister reads.
 If we find a pair of bins that contain at least two sets of \textit{sister} reads, we flag it as a canidate breakpoint.
 
-%%%%%%%%%%%%%%%%%%%%%%%%% Need to add additional text
-\begin{figure}[tb!]
-\begin{center}
-\includegraphics[width=3in]{figures/valet_pipeline}
-\end{center}
-\caption[valet_pipeline]{Digram of the VALET pipeline.}
-\label{fig:valet_pipeline}
-\end{figure}
-
-\begin{figure}[tb!]
-\begin{center}
-\includegraphics[width=3in]{figures/frc}
-\end{center}
-\caption[hmp_frc]{Feature Response Curve (FRC) plot produced by VALET comparing assemblies of a Vaginal introitus sample (SRS014465) from the Human Microbiome Project~\citep{human2012structure} (using IDBA-UD~\citep{peng2012idba}, MetaVelvet~\citep{namiki2012metavelvet}, Velvet~\citep{zerbino2008velvet}, SPAdes\citep{bankevich2012spades}, and SOAPdenovo2~\citep{luo2012soapdenovo2}. Point $(x,y)$ corresponds to the number of errors incurred, $y$, after processing the longest contigs until $x$ bp is reached.}
-\label{fig:hmp_frc}
-\end{figure}
+% \begin{figure}[tb!]
+% \begin{center}
+% \includegraphics[width=3in]{figures/valet_pipeline}
+% \end{center}
+% \caption[valet_pipeline]{Digram of the VALET pipeline.}
+% \label{fig:valet_pipeline}
+% \end{figure}
 
 \subsection{Comparing multiple assemblies}
 
@@ -163,7 +159,7 @@ This allows for quick visual comparison a set of metagenomic assemblies.
 
 \subsection{VALET pipeline}
 
-VALET takes as input a metagenome assembly \textsc{FASTA} file and a collection of paired and un-paired reads (Figure~\ref{fig:valet_pipeline}).
+VALET takes as input a metagenome assembly \textsc{FASTA} file and a collection of paired and un-paired reads  (Figure \emph{REF SUPPLEMENTAL})%(Figure~\ref{fig:valet_pipeline}).
 Assembled contigs are first filtered out based on size (2x the average read length by default).
 Next the abundances of contigs are calculated by aligning the reads to the assembly with Bowtie 2~\citep{langmead2012fast} and samtools~\citep{li2009sequence}.
 Contigs undergo an additional filtering step removing low abundance (i.e. coverage) contigs (10x by default).
@@ -179,14 +175,20 @@ The excluding regions without multiple mis-assembly signatures may lead to addit
 %Regions that share multiple mis-assembly signatures may be more likely an \textit{actual} mis-assembly.
 
 
-\begin{figure*}[tb!]
+% \begin{figure*}[tb!]
+% \begin{center}
+% \includegraphics[width=.75\textwidth]{figures/hmp_plasmid}
+% \end{center}
+% \caption[hmp_plasmid]{An example suspicious region flagged by VALET in the HMP assembly of of a Vaginal introitus sample (SRS014465) from the Human Microbiome Project~\citep{human2012structure}.}
+% \label{fig:hmp_plasmid}
+% \end{figure*}
+\begin{figure}
 \begin{center}
-\includegraphics[width=.75\textwidth]{figures/hmp_plasmid}
+\includegraphics[width=3in]{figures/frc.png}
 \end{center}
-\caption[hmp_plasmid]{An example suspicious region flagged by VALET in the HMP assembly of of a Vaginal introitus sample (SRS014465) from the Human Microbiome Project~\citep{human2012structure}.}
-\label{fig:hmp_plasmid}
-\end{figure*}
-
+\caption[hmp_frc]{Feature Response Curve (FRC) plot produced by VALET comparing assemblies of a Vaginal introitus sample (SRS014465) from the Human Microbiome Project~\citep{human2012structure} (using IDBA-UD~\citep{peng2012idba}, MetaVelvet~\citep{namiki2012metavelvet}, Velvet~\citep{zerbino2008velvet}, SPAdes\citep{bankevich2012spades}, and SOAPdenovo2~\citep{luo2012soapdenovo2}. Point $(x,y)$ corresponds to the number of errors incurred, $y$, after processing the longest contigs until $x$ bp is reached.}
+\label{fig:hmp_frc}
+\end{figure}
 
 \subsection{Using VALET to compare assemblies of a sample from the Human Microbiome Project}
 
@@ -195,7 +197,7 @@ Using VALET, we can compare the accumulated predicted error versus cumulative as
 From this plot we can observe that the HMP assembly is accumulating errors at the lowest rate compared to the other assemblers.
 
 The suspicious regions flagged by VALET combined with the IGV support provide researchers with a powerful starting point in their mis-assembly investigation.
-For example, lets look at one of the suspicious regions flagged in the HMP assembly (Figure \ref{fig:hmp_plasmid}.
+For example, lets look at one of the suspicious regions flagged in the HMP assembly (Figure \emph{REF SUPPLEMENTAL}).%\ref{fig:hmp_plasmid} .
 VALET flags a 1.7 kbp high coverage region flanked by breakpoints.
 This region BLASTs~\citep{BLAST} to \emph{Lactobacillus amylovorus} GRL 1118 plasmid2 (CP002611.1).
 The right flanking region of the contig from positions 5,362 to 10,839 aligns to \emph{Lactobacillus crispatus} ST1, strain ST1 (FN692037.1) with 98\% similarity.
@@ -210,7 +212,8 @@ VALET allows researchers to find regions of their assemblies that are statistica
 
 \section*{Acknowledgement}
 
-\paragraph{Funding\textcolon} Text Text Text Text Text Text  Text Text.
+\paragraph{Funding\textcolon} 
+This work was funded by NIH R01-AI-100947 to MP.
 
 \bibliographystyle{natbib}
 % \bibliographystyle{achemnat}
