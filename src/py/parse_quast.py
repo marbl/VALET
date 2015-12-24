@@ -12,7 +12,7 @@ def setup_options():
     parser.add_option("-q", "--quast", dest="quast_filename", help="QUAST stdout filename.", metavar="FILE")
     parser.add_option("-g", "--gff", dest="gff_filename", help="GFF filename to compare quast results to.", metavar="FILE")
     parser.add_option("-b", "--bed", dest="bed_filename", help="BED filename to compare quast results to.", metavar="FILE")
-    parser.add_option("-m", "--missed", dest="missed_misassemblies", help="Write out missed misassemblies here", metavar="FILE", default=None)
+    parser.add_option("-m", "--missed", dest="missed_misassemblies", help="Write out misassemblies not in bed or gff file but identified by QUAST", metavar="FILE", default=None)
     parser.add_option("-o", "--offset", dest="offset", type="int", default=0)
     (options,args) = parser.parse_args()
 
