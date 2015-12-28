@@ -44,17 +44,11 @@ This difficulty is compounded in metagenomic samples due to varying organism abu
 Since many downstream applications rely on metagenome assemblies, it is critical that the assembly is error-free.
 Existing methods for finding mis-assemblies primarily focus on single genome assemblies and fall into two categories: reference-based and \emph{de novo} evaluation.
 
-Reference-based methods use a collection of, often manually curated, reference genomes, while \emph{de novo} methods look for inconsistencies between characteristics of the data generation process and the resulting assembly.
-%%%%
-%%%% TODO Update description for metaquast
-%%%%
-QUAST~\citep{gurevich2013quast} is a reference based method that identifies mis-assemblies and structural variants in an assembly relative to a user provided reference genome.
-QUAST leverages existing methods (Plantagora~\citep{barthelson2011plantagora},
-GeneMark.hmm~\citep{lukashin1998genemark}, GlimmerHMM~\citep{majoros2004tigrscan}) and quality metrics (GAGE~\citep{salzberg2011gage}).
-%%%%
-%%% TODO add example metrics provided by MetaQUAST
-%%%
-Though QUAST is able to calculate a number of quality metrics, such as \emph{ADD Examples}, without a reference genome, these metrics only provide information about the overall quality of the assembly not assembly accuracy.
+Reference-based methods use a collection of, often manually curated, reference genomes, while \emph{de novo} methods look for inconsistencies between characteristics of the data generation process and the resulting assembly. 
+MetaQUAST~\citep{mikheenko2015metaquast} is a reference based method that identifies mis-assemblies and structural variants in an assembly relative to a user provided reference genome.
+MetaQUAST leverages existing methods (Plantagora~\citep{barthelson2011plantagora},
+MetaGeneMark.hmm~\citep{zhu2010ab}, MANTA~\citep{chen2015manta}) and quality metrics (GAGE~\citep{salzberg2011gage}). 
+Though MetaQUAST is able to calculate a number of quality metrics, such as N50 and NG50, without a reference genome, these metrics only provide information about the overall quality of the assembly not assembly accuracy.
 % QUAST uses the Plantagora’s definition of a mis-assembly,
 % i.e., a mis-assembly breakpoint is defined as a position in the assembled contigs where (1) the left flanking
 % sequence aligns over 1kb away from right flanking sequence on the reference, or (2) the sequences overlap by
@@ -73,15 +67,12 @@ REAPR determines the fragment coverage by first independently aligning the read-
 A fragment is defined as the distance from the end points of proper read-pairs (those that are determined to have correct orientation and separated by the correct distance).
 REAPR is able to find base-level errors by comparing the fragment coverage of a given base with the theoretical coverage.
 
-
-%%%
-%%% TODO modify text to discuss metaquast
-%%% 
-Although all the above-mentioned tools were designed to work on single genomes, they do not function correctly on metagenomic assemblies.
-QUAST requires reference genomes, which are simply not available for most metagenomic samples.
-Furthermore, if the \emph{correct} reference strain is not available and the genome of a related strain is used, then QUAST may erroneously flag correct and true biological differences between the reference and sequenced strain as mis-assemblies.
+The above-mentioned reference based and \emph{de novo} tools all have limitations for when applied to metagenomic assemblies. 
+MetaQUAST requires reference genomes, which are simply not available for most metagenomic samples. 
+Furthermore, if the \emph{correct} reference strain is not available and the genome of a related strain is used, then MetaQUAST may erroneously flag correct and true biological differences between the reference and sequenced strain as mis-assemblies. 
+To address this issue, if reference genomes are not provided by the use MetaQUAST attempts to retrieve relevant reference genomes from the NCBI database and uses the structural variant caller MANTA to filter false positive misassemblies that represent true biological differences between the reference genome and the strain in the metagenomic sample. This approach is unable to evaluate assembly accuracy of contigs that represent novel sequences in the metagenomic sample. 
 The \emph{de novo} tools REAPR and amosvalidate rely on global uniform sequence coverage to flag regions as potential mis-assemlies.
-Due to the variability in abundance of individual strains within a sequenced sample, the coverage between contigs in a metagenome assembly will also vary \emph{REF}.
+Due to the variability in abundance of individual strains within a sequenced sample, the coverage between contigs in a metagenome assembly will also vary.
 Assuming uniform coverage will cause these tools to erroneously flag regions as mis-assembled.
 
 Here, we detail how to modify the constraints of existing tools to allow them to work with metagenomic assemblies.
@@ -232,7 +223,7 @@ This work was funded by NIH R01-AI-100947 to MP.
 % \bibliographystyle{abbrv}
 % \bibliographystyle{bioinformatics}
 
-\bibliographystyle{plain}
+% \bibliographystyle{plain}
 
 \bibliography{valet}
 
