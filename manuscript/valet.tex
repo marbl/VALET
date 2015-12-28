@@ -105,46 +105,23 @@ If a read does not fall into one of the above categories, then it may be a sign 
 VALET flags regions of the assembly based on (1) depth of coverage, (2) insert size consistency, and (3) alignability of the sequences.
 
 \subsection{Depth of coverage analysis}
-%The sequencing process of randomly-sheared fragments follows a Poisson distribution~\citep{lander1988genomic}.  Regions within assembled contigs that show high variance in coverage may be potential mis-assemblies.  Areas of high and low depths of coverage could be compressed/expanded repeats, chimeric contigs, and other types of contamination.
-
 In order to find regions of unexpectedly high/low coverage, we first learn the distribution of per-base coverages across a given contig.  Using this distribution, bases are marked if their coverage falls below or above a certain threshold.  We set the lower cutoff as the first quartile minus 1.5 $\times$ the interquartile range (IQR), which is the difference between the first and third quartile. 1.5 $\times$ IQR is the value used by Tukey’s box plot~\citep{mcgill1978variations}.  Regions whose coverage is greater than the third quartile plus 2.0 $\times$ IQR are marked as high coverage.
-%The main benefit of this approach is that it is completely data-dependent. No prior assumptions of the distribution of the quality values need to be made.
+
 
 Using the per-base coverages may result in a large number of regions erroneously marked as mis-assemblies due to the inherent noisiness of the data, so we also provide a sliding window approach to smooth out the per-base coverages. The larger the window, the fewer the regions marked as mis-assemblies.
 VALET uses a window size of 501 bp by default.
 
 \subsection{Insert size consistency}
-
-%Certain sequencing technology allows researchers to sequence from the ends of a DNA fragment of a known insert size.  Although the sequence technology can only give the raw sequence of the first couple hundred basepairs from the ends of the fragment, the distance between the ends of the sequences can be used to aid in resolving repeats, and orienting and scaffolding contigs.  Regions of an assembly containing a disproportionate number of mate-pairs (reads from the same fragment) with incorrect insert sizes may be a potential mis-assembly.
-
 VALET uses the REAPR~\citep{hunt2013reapr} pipeline to identify mate-pair insert size inconsistencies.  REAPR works by first sampling the fragment coverage across the genome to estimate average fragment length and depth of coverage.  Using this information, REAPR scans the assembly for observed regions that differ from the expected fragment length distribution and orientations.
 
 REAPR is designed to work with single genome assemblies, more specifically, assemblies with a global uniform coverage.  Since the contig abundances can vary drastically in metagenomic assemblies, VALET bins contigs by similar abundances then runs the REAPR pipeline on the binned contigs.
 
 \subsection{Identifying assembly breakpoints}
-% The reads given to the assembler should be alignable to the resulting assembly.
-% %During sequencing, reads are produced starting from random locations within the genome.
-% %Thus, the reads must be able to align to the resulting assembly.
-% In practice, however, a read may fail to align for a few reasons.
-% %When a read is unable to align to an assembly, there must be some explanation.
-% In metagenomic samples, an unaligned read can be from a rare, low coverage organism, and was never assembled with any other reads.
-% A read with a large amount of errors will be unable to align within a specified similarity to the assembly.
-% A read can come from a unfiltered contaminant or primer.
-% If a read does not fall into one of the above categories, then it may be a sign of a potential mis-assembly.
-
 Possible breakpoints in the assembly are found by examining regions where a large number of parts of the reads are able to align.
 To identify breakpoints, we used the first and last third of each unaligned read, \emph{sister} reads.
 The \emph{sister} reads were aligned independently to the reference genome.
 We then partitioned the assembly into bins (50 bp by default) and record which bins correspond to the sister reads.
 If we find a pair of bins that contain at least two sets of \textit{sister} reads, we flag it as a canidate breakpoint.
-
-% \begin{figure}[tb!]
-% \begin{center}
-% \includegraphics[width=3in]{figures/valet_pipeline}
-% \end{center}
-% \caption[valet_pipeline]{Digram of the VALET pipeline.}
-% \label{fig:valet_pipeline}
-% \end{figure}
 
 \subsection{Comparing multiple assemblies}
 
@@ -167,8 +144,6 @@ The false positive rate can be reduced by focusing on regions where multiple sig
 Therefore, any window of the assembly (2000 bp in length by default) that contains multiple mis-assembly signatures are marked as \textbf{suspicious}.
 The flagged and suspicious regions are stored in a \textsc{BED} file, which allows users to visualize the mis-assemblies using any genomic viewers, such as \text{IGV}~\citep{thorvaldsdottir2012integrative}.
 The excluding regions without multiple mis-assembly signatures may lead to additional false negatives. It is important for the user to be aware of the trade-off and use the filtered or unfiltered set of mis-assemblies that is more appropriate for their application.
-%Regions that share multiple mis-assembly signatures may be more likely an \textit{actual} mis-assembly.
-
 
 % \begin{figure*}[tb!]
 % \begin{center}

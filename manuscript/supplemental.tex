@@ -12,9 +12,8 @@
 \date{}
 \maketitle
 \section{VALET Pipeline}
-%%%%
-%%%% TODO add brief description of pipeline
-%%%%
+VALET flags regions as potential mis-assemblies when the characteristics of the sequence data do not meet the assumptions for the sequence generation process regarding (1) depth of coverage, (2) insert size consistency, and (3) alignability of the sequences (Figure~\ref{fig:valet_pipeline}). 
+Regions that share multiple mis-assembly signatures may be more likely an \textit{actual} mis-assembly.
 
 \begin{figure}[tb!]
 \begin{center}
@@ -23,6 +22,26 @@
 \caption[valet_pipeline]{Digram of the VALET pipeline.}
 \label{fig:valet_pipeline}
 \end{figure}
+
+\subsection{Depth of Coverage Analysis}
+The sequencing process of randomly-sheared fragments follows a Poisson distribution~\citep{lander1988genomic}.  Regions within assembled contigs that show high variance in coverage may be potential mis-assemblies. 
+Areas of high and low depths of coverage could be compressed/expanded repeats, chimeric contigs, and other types of contamination. 
+The main benefit of this approach is that it is completely data-dependent. No prior assumptions of the distribution of the quality values need to be made.
+
+\subsection{Insert size consistency}
+Although the sequence technology can only give the raw sequence of the first couple hundred basepairs from the ends of the fragment, the distance between the ends of the sequences can be used to aid in resolving repeats, and orienting and scaffolding contigs. 
+Regions of an assembly containing a disproportionate number of mate-pairs (reads from the same fragment) with incorrect insert sizes may be a potential mis-assembly.
+
+\subsection{Identifying assembly breakpoints}
+The reads given to the assembler should be alignable to the resulting assembly.
+During sequencing, reads are produced starting from random locations within the genome.
+Thus, the reads must be able to align to the resulting assembly.
+In practice, however, a read may fail to align for a few reasons.
+When a read is unable to align to an assembly, there must be some explanation.
+In metagenomic samples, an unaligned read can be from a rare, low coverage organism, and was never assembled with any other reads.
+A read with a large amount of errors will be unable to align within a specified similarity to the assembly.
+A read can come from a unfiltered contaminant or primer.
+If a read does not fall into one of the above categories, then it may be a sign of a potential mis-assembly.
 
 \section{Evaluation}
 \subsection{Definition of a mis-assembly}
