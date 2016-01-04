@@ -1,0 +1,36 @@
+## VALET-QUAST Comparison output
+## Comparison summary
+## Ref misassemblies found:	25	53	0.471698113208
+## Extensive misassemblies found:	3.0	9	0.333333333333
+## Local missed_misassemblies found:	22.0	44	0.5
+## Valid query misassemblies:	0.727272727273
+## False positive rate:	9	33	0.272727272727
+## Q_ indicates quast misassembly calls
+## V_ indicates VALET missassembly calls
+## Type - type of error call, Scaffold - scaffold name, Start - start position of candidate misassembly, End - end position of candidate misassembly
+Q_Type	Q_Scaffold	Q_Start	Q_End	V_Type	V_Scaffold	V_Start	V_End
+local	ctg7180000019546	51472	51550	Breakpoint_finder,Low_coverage	ctg7180000019546	51458	52290
+local	ctg7180000019549	34259	34336	Low_coverage,REAPR	ctg7180000019549	33921	35317
+extensive	ctg7180000019557	2903	3095	High_coverage,REAPR	ctg7180000019557	251	11099
+local	ctg7180000019695	43177	43259	Breakpoint_finder,High_coverage,REAPR	ctg7180000019695	42866	43625
+extensive	ctg7180000019696	298357	299300	Breakpoint_finder,High_coverage	ctg7180000019696	298584	303736
+local	ctg7180000019697	134085	134165	Breakpoint_finder,REAPR	ctg7180000019697	133891	134402
+local	ctg7180000019697	248674	248702	Low_coverage,REAPR	ctg7180000019697	248552	249310
+local	ctg7180000019713	12053	12137	Breakpoint_finder,High_coverage,REAPR	ctg7180000019713	11820	12360
+local	ctg7180000019717	6162	6654	High_coverage,REAPR	ctg7180000019717	5981	6525
+local	ctg7180000019724	16107	16408	High_coverage,REAPR	ctg7180000019724	15925	16459
+local	ctg7180000019732	13942	13942	High_coverage,REAPR	ctg7180000019732	13531	14304
+local	ctg7180000019747	45045	45451	High_coverage,REAPR	ctg7180000019747	45045	45591
+local	ctg7180000019757	19596	19684	Breakpoint_finder,REAPR	ctg7180000019757	19324	19931
+local	ctg7180000019759	66855	67068	Low_coverage,REAPR	ctg7180000019759	66545	68080
+local	ctg7180000019783	96207	96587	High_coverage,REAPR	ctg7180000019783	96060	96642
+local	ctg7180000019832	2952	3052	High_coverage,REAPR	ctg7180000019832	2671	3265
+local	ctg7180000019835	772	1012	Breakpoint_finder,High_coverage,REAPR	ctg7180000019835	644	1225
+extensive	ctg7180000019871	30977	32817	Breakpoint_finder,High_coverage	ctg7180000019871	30787	32825
+local	ctg7180000019872	1396	1396	Breakpoint_finder,REAPR	ctg7180000019872	1031	1815
+local	ctg7180000019878	3327	3596	High_coverage,REAPR	ctg7180000019878	3232	4278
+local	ctg7180000019878	3968	4246	High_coverage,REAPR	ctg7180000019878	3232	4278
+local	ctg7180000019922	9768	10003	High_coverage,REAPR	ctg7180000019922	9165	10228
+local	ctg7180000019934	17582	18027	High_coverage,REAPR	ctg7180000019934	17599	18179
+local	jtg7180000019698f_7180000019699f	30931	31515	High_coverage,REAPR	jtg7180000019698f_7180000019699f	30762	31466
+local	jtg7180000019874f_7180000019875f	3086	3315	High_coverage,REAPR	jtg7180000019874f_7180000019875f	2951	3511

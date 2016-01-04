@@ -1,0 +1,40 @@
+All statistics are based on contigs of size >= 5000 bp, unless otherwise noted (e.g., "# contigs (>= 0 bp)" and "Total length (>= 0 bp)" include all contigs).
+
+Assembly                     soapdenovo2.55.asm
+# contigs (>= 0 bp)          78449             
+# contigs (>= 1000 bp)       21477             
+# contigs (>= 5000 bp)       5782              
+# contigs (>= 10000 bp)      3414              
+# contigs (>= 25000 bp)      1541              
+# contigs (>= 50000 bp)      721               
+Total length (>= 0 bp)       204415012         
+Total length (>= 1000 bp)    183604750         
+Total length (>= 5000 bp)    150990751         
+Total length (>= 10000 bp)   134523269         
+Total length (>= 25000 bp)   105192332         
+Total length (>= 50000 bp)   76499693          
+# contigs                    5782              
+Largest contig               1063467           
+Total length                 150990751         
+Reference length             210822240         
+N50                          50979             
+N75                          19861             
+L50                          702               
+L75                          1903              
+# misassemblies              234               
+# misassembled contigs       161               
+Misassembled contigs length  8516588           
+# local misassemblies        238               
+# structural variations      38                
+# unaligned contigs          155 + 76 part     
+Unaligned length             5597261           
+Genome fraction (%)          68.997            
+Duplication ratio            1.002             
+# N's per 100 kbp            1.05              
+# mismatches per 100 kbp     41.89             
+# indels per 100 kbp         3.72              
+Largest alignment            1063467           
+NA50                         45408             
+NA75                         17069             
+LA50                         773               
+LA75                         2136              

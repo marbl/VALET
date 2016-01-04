@@ -1,0 +1,18 @@
+## VALET-QUAST Comparison output
+## Comparison summary
+## Ref misassemblies found:	7	332	0.0210843373494
+## Extensive misassemblies found:	7.0	179	0.0391061452514
+## Local missed_misassemblies found:	0.0	153	0.0
+## Valid query misassemblies:	0.00540054005401
+## False positive rate:	1105	1111	0.994599459946
+## Q_ indicates quast misassembly calls
+## V_ indicates VALET missassembly calls
+## Type - type of error call, Scaffold - scaffold name, Start - start position of candidate misassembly, End - end position of candidate misassembly
+Q_Type	Q_Scaffold	Q_Start	Q_End	V_Type	V_Scaffold	V_Start	V_End
+extensive	NODE_10337_length_10744_cov_11.703555_0	572	1129	High_coverage	NODE_10337_length_10744_cov_11.703555_0	804	863
+extensive	NODE_13628_length_25693_cov_48.320984_0	7761	7762	High_coverage	NODE_13628_length_25693_cov_48.320984_0	7614	8873
+extensive	NODE_13628_length_25693_cov_48.320984_0	8812	8812	High_coverage	NODE_13628_length_25693_cov_48.320984_0	7614	8873
+extensive	NODE_21244_length_6220_cov_13.067203_0	5243	5908	High_coverage	NODE_21244_length_6220_cov_13.067203_0	5198	5514
+extensive	NODE_3071_length_561394_cov_15.621909_1	41596	56417	High_coverage	NODE_3071_length_561394_cov_15.621909_1	53273	53576
+extensive	NODE_623_length_33591_cov_20.084160_0	32873	32874	High_coverage	NODE_623_length_33591_cov_20.084160_0	32758	32879
+extensive	NODE_7892_length_31168_cov_8.492011_1	1859	2048	High_coverage	NODE_7892_length_31168_cov_8.492011_1	1523	2045

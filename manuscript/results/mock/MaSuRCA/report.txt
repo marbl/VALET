@@ -1,0 +1,40 @@
+All statistics are based on contigs of size >= 5000 bp, unless otherwise noted (e.g., "# contigs (>= 0 bp)" and "Total length (>= 0 bp)" include all contigs).
+
+Assembly                     masurca.45.asm
+# contigs (>= 0 bp)          540           
+# contigs (>= 1000 bp)       453           
+# contigs (>= 5000 bp)       343           
+# contigs (>= 10000 bp)      285           
+# contigs (>= 25000 bp)      178           
+# contigs (>= 50000 bp)      93            
+Total length (>= 0 bp)       16803077      
+Total length (>= 1000 bp)    16764569      
+Total length (>= 5000 bp)    16491755      
+Total length (>= 10000 bp)   16061094      
+Total length (>= 25000 bp)   14308087      
+Total length (>= 50000 bp)   11267897      
+# contigs                    343           
+Largest contig               571594        
+Total length                 16491755      
+Reference length             16755449      
+N50                          83189         
+N75                          39544         
+L50                          47            
+L75                          119           
+# misassemblies              9             
+# misassembled contigs       9             
+Misassembled contigs length  1475810       
+# local misassemblies        44            
+# structural variations      0             
+# unaligned contigs          0 + 1 part    
+Unaligned length             1879          
+Genome fraction (%)          96.171        
+Duplication ratio            1.024         
+# N's per 100 kbp            0.00          
+# mismatches per 100 kbp     67.55         
+# indels per 100 kbp         9.66          
+Largest alignment            571594        
+NA50                         81327         
+NA75                         39178         
+LA50                         50            
+LA75                         125           
