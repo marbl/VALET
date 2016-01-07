@@ -1,0 +1,40 @@
+All statistics are based on contigs of size >= 5000 bp, unless otherwise noted (e.g., "# contigs (>= 0 bp)" and "Total length (>= 0 bp)" include all contigs).
+
+Assembly                     metavelvet.55.asm
+# contigs (>= 0 bp)          53009            
+# contigs (>= 1000 bp)       15533            
+# contigs (>= 5000 bp)       5707             
+# contigs (>= 10000 bp)      3335             
+# contigs (>= 25000 bp)      1392             
+# contigs (>= 50000 bp)      580              
+Total length (>= 0 bp)       168775809        
+Total length (>= 1000 bp)    156554695        
+Total length (>= 5000 bp)    134157560        
+Total length (>= 10000 bp)   117513516        
+Total length (>= 25000 bp)   87541289         
+Total length (>= 50000 bp)   59272044         
+# contigs                    5707             
+Largest contig               707879           
+Total length                 134157560        
+Reference length             210822240        
+N50                          41337            
+N75                          17113            
+L50                          752              
+L75                          2027             
+# misassemblies              179              
+# misassembled contigs       148              
+Misassembled contigs length  5418414          
+# local misassemblies        153              
+# structural variations      36               
+# unaligned contigs          148 + 68 part    
+Unaligned length             4672640          
+Genome fraction (%)          61.477           
+Duplication ratio            1.002            
+# N's per 100 kbp            0.00             
+# mismatches per 100 kbp     45.90            
+# indels per 100 kbp         2.52             
+Largest alignment            707879           
+NA50                         38279            
+NA75                         14873            
+LA50                         818              
+LA75                         2250             

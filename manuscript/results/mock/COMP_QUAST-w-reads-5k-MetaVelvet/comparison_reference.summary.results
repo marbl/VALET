@@ -1,0 +1,37 @@
+## VALET-QUAST Comparison output
+## Comparison summary
+## Ref misassemblies found:	16	20	0.8
+## Extensive misassemblies found:	1.0	1	1.0
+## Local missed_misassemblies found:	15.0	19	0.789473684211
+## Valid query misassemblies:	0.151515151515
+## False positive rate:	140	165	0.848484848485
+## Q_ indicates quast misassembly calls
+## V_ indicates VALET missassembly calls
+## Type - type of error call, Scaffold - scaffold name, Start - start position of candidate misassembly, End - end position of candidate misassembly
+Q_Type	Q_Scaffold	Q_Start	Q_End	V_Type	V_Scaffold	V_Start	V_End
+local	NODE_1105_length_17801_cov_15.109488	11449	11533	REAPR	NODE_1105_length_17801_cov_15.109488	11206	11759
+local	NODE_1105_length_17801_cov_15.109488	11449	11533	High_coverage	NODE_1105_length_17801_cov_15.109488	11256	11502
+local	NODE_1105_length_17801_cov_15.109488	11449	11533	Breakpoint_finder	NODE_1105_length_17801_cov_15.109488	11423	11473
+local	NODE_1130_length_28767_cov_15.072618	20715	20925	REAPR	NODE_1130_length_28767_cov_15.072618	20562	21094
+local	NODE_1130_length_28767_cov_15.072618	20715	20925	High_coverage	NODE_1130_length_28767_cov_15.072618	20600	20989
+local	NODE_1157_length_27973_cov_15.326530	772	1012	REAPR	NODE_1157_length_27973_cov_15.326530	608	1209
+local	NODE_1157_length_27973_cov_15.326530	772	1012	High_coverage	NODE_1157_length_27973_cov_15.326530	692	1095
+local	NODE_1201_length_120487_cov_15.448629	40885	41232	REAPR	NODE_1201_length_120487_cov_15.448629	40883	41390
+local	NODE_1201_length_120487_cov_15.448629	92728	92903	REAPR	NODE_1201_length_120487_cov_15.448629	92470	93100
+local	NODE_1201_length_120487_cov_15.448629	92728	92903	High_coverage	NODE_1201_length_120487_cov_15.448629	92533	93062
+local	NODE_1243_length_13890_cov_15.234054	2875	2975	REAPR	NODE_1243_length_13890_cov_15.234054	2590	3193
+local	NODE_1319_length_20177_cov_15.169500	8418	8586	High_coverage	NODE_1319_length_20177_cov_15.169500	8254	8713
+local	NODE_1388_length_60998_cov_15.731614	874	1179	REAPR	NODE_1388_length_60998_cov_15.731614	766	1415
+local	NODE_1440_length_27805_cov_15.079734	9536	10191	High_coverage	NODE_1440_length_27805_cov_15.079734	9502	10047
+local	NODE_1440_length_27805_cov_15.079734	9536	10191	REAPR	NODE_1440_length_27805_cov_15.079734	9542	10675
+local	NODE_1440_length_27805_cov_15.079734	10389	10390	REAPR	NODE_1440_length_27805_cov_15.079734	9542	10675
+local	NODE_1647_length_19577_cov_14.799918	13967	14225	High_coverage	NODE_1647_length_19577_cov_14.799918	13767	14102
+local	NODE_1801_length_55120_cov_15.423259	50990	51271	REAPR	NODE_1801_length_55120_cov_15.423259	50937	52010
+local	NODE_1801_length_55120_cov_15.423259	50990	51271	High_coverage	NODE_1801_length_55120_cov_15.423259	50938	51359
+local	NODE_1801_length_55120_cov_15.423259	51643	51840	REAPR	NODE_1801_length_55120_cov_15.423259	50937	52010
+local	NODE_1801_length_55120_cov_15.423259	51643	51840	High_coverage	NODE_1801_length_55120_cov_15.423259	51461	51976
+local	NODE_1801_length_55120_cov_15.423259	51643	51840	REAPR	NODE_1801_length_55120_cov_15.423259	51728	51749
+local	NODE_2183_length_52375_cov_10.013499	2147	2225	Breakpoint_finder	NODE_2183_length_52375_cov_10.013499	2141	2191
+extensive	NODE_2191_length_197611_cov_10.005460	65007	65445	High_coverage	NODE_2191_length_197611_cov_10.005460	64854	65574
+local	NODE_68_length_137386_cov_20.067591	112966	113129	REAPR	NODE_68_length_137386_cov_20.067591	112767	113283
+local	NODE_68_length_137386_cov_20.067591	112966	113129	Breakpoint_finder	NODE_68_length_137386_cov_20.067591	112964	113014

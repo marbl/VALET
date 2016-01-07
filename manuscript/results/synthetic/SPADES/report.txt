@@ -1,0 +1,40 @@
+All statistics are based on contigs of size >= 5000 bp, unless otherwise noted (e.g., "# contigs (>= 0 bp)" and "Total length (>= 0 bp)" include all contigs).
+
+Assembly                     spades.55.asm
+# contigs (>= 0 bp)          32036        
+# contigs (>= 1000 bp)       14001        
+# contigs (>= 5000 bp)       5367         
+# contigs (>= 10000 bp)      3210         
+# contigs (>= 25000 bp)      1617         
+# contigs (>= 50000 bp)      870          
+Total length (>= 0 bp)       200864773    
+Total length (>= 1000 bp)    193370225    
+Total length (>= 5000 bp)    173364620    
+Total length (>= 10000 bp)   158232937    
+Total length (>= 25000 bp)   133621461    
+Total length (>= 50000 bp)   106778609    
+# contigs                    5367         
+Largest contig               1630328      
+Total length                 173364620    
+Reference length             210822240    
+N50                          74297        
+N75                          28083        
+L50                          539          
+L75                          1482         
+# misassemblies              765          
+# misassembled contigs       627          
+Misassembled contigs length  27040539     
+# local misassemblies        409          
+# structural variations      40           
+# unaligned contigs          71 + 108 part
+Unaligned length             5743186      
+Genome fraction (%)          79.915       
+Duplication ratio            1.003        
+# N's per 100 kbp            0.00         
+# mismatches per 100 kbp     92.22        
+# indels per 100 kbp         4.34         
+Largest alignment            1630328      
+NA50                         62668        
+NA75                         21286        
+LA50                         625          
+LA75                         1788         

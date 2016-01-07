@@ -7,9 +7,8 @@
 \usepackage{booktabs}
 
 
-\usepackage{Sweave}
 \begin{document}
-\input{supplemental-concordance}
+\SweaveOpts{concordance=TRUE}
 \title{VALET: \emph{de novo} pipeline for finding metagenomic mis-assemblies}
 \author{Supplemental Material}
 \date{}
@@ -95,28 +94,18 @@ SOME TEXT SUMMARIZING THE COMPARISON RESULTS (Table~\ref{mock_comp_tbl}).
 This section will be removed later. MetaQUAST does not identify any error for the SOAPdenovo and Velvet assemblies thus no misassemblies for the two assemblers. VALET does however identify misassemblies. The QUAST-VALET comparison tool in VALET does not generate any output when no misassemblies are called by QUAST/MetaQUAST.  
 
 
+<<echo=FALSE>>=
+source("supplemental_table_functions.R")
+mock_tbl <- make_comparison_tbl(results_dir = "~/VALET/manuscript/results/mock", 
+                    list("MaSuRCA", "MetaVelvet", "SOAPdenovo2","Velvet"))
+synthetic_tbl <- make_comparison_tbl(results_dir = "~/VALET/manuscript/results/synthetic", 
+                    list("MetaVelvet", "SOAPdenovo2","SPADES","Velvet"))
+@
 
-\begin{table}
+<<echo=FALSE,results=tex>>=
+mock_tbl %>% kable(format = "latex",align = c("l","r","r","r","r"), booktabs=TRUE, caption = "VALET results for simulated mock community consisting of four bacteria at varying abundances. Reads were assembled using the four provided assemblers. General assembly statistics include length in Mbp (Len), number of contigs (Ctgs), N50 contig size in kbp (N50), N50 of contigs after broken at mis-assemblies in kbp (NA50) and mismatches per  were calculated for contigs \\textgreater 5 kbp. The number of errors detected by MetaQUAST ( MQ Errs), number of flagged regions by VALET (Flg), number of flagged regions that overlap an error found by MetaQUAST (Flg Overlap), number of valid misassemblies or flagged regions with multiple misassembly signatures (Vld), number of valid revions that overlap an error found by MetaQUAST (Vld Overlap).\\label{mock_comp_tbl}")
+@
 
-\caption{VALET results for simulated mock community consisting of four bacteria at varying abundances. Reads were assembled using the four provided assemblers. General assembly statistics include length in Mbp (Len), number of contigs (Ctgs), N50 contig size in kbp (N50), N50 of contigs after broken at mis-assemblies in kbp (NA50) and mismatches per  were calculated for contigs \textgreater 5 kbp. The number of errors detected by MetaQUAST ( MQ Errs), number of flagged regions by VALET (Flg), number of flagged regions that overlap an error found by MetaQUAST (Flg Overlap), number of valid misassemblies or flagged regions with multiple misassembly signatures (Vld), number of valid revions that overlap an error found by MetaQUAST (Vld Overlap).\label{mock_comp_tbl}}
-\begin{tabular}{lrrrr}
-\toprule
-Metric & MaSuRCA & MetaVelvet & SOAPdenovo2 & Velvet\\
-\midrule
-Len & 16,491,755 & 12,162,955 & 8,317,492 & 1,006,455\\
-Ctgs & 343 & 312 & 841 & 149\\
-N50 & 83,189 & 67,835 & 10,424 & 6,603\\
-NA50 & 81,327 & 65,716 & 10,424 & 6,027\\
-MPK & 67.55 & 63.41 & 58.32 & 56.82\\
-\addlinespace
-MQ Errs & 53 & 20 & 0 & 0\\
-Flg & 401 & 165 & 0 & 0\\
-Flg Overlap & 41 & 16 & 0 & 0\\
-Vld & 33 & 17 & 0 & 0\\
-Vld Overlap & 25 & 11 & 0 & 0\\
-\bottomrule
-\end{tabular}
-\end{table}
 \subsection{Synthetic Metagenomic Community}
 
 \begin{figure}
@@ -133,27 +122,10 @@ We assembled the dataset using Velvet~\citep{zerbino2008velvet}, MetaVelvet~\cit
 We ran VALET on the assemblies and compare the errors found with the reference-based mis-assemblies detected by MetaQUAST (Table~\ref{syn_comp_tbl}). 
 These rankings match those provided by VALET (Figure~\ref{fig:simulated_frc}).
 
-\begin{table}
+<<echo=FALSE,results=tex,label="syn_comp_tbl">>=
+synthetic_tbl %>% kable(format = "latex",align = c("l","r","r","r","r"), booktabs=TRUE,caption = "VALET results for assemblies of the Shakya et al.~\\citep{shakya2013comparative} dataset. Reads were assembled using the four provided assemblers. General assembly statistics include length in Mbp (Len), number of contigs (Ctgs), N50 contig size in kbp (N50), N50 of contigs after broken at mis-assemblies in kbp (NA50) and mismatches per  were calculated for contigs \\textgreater 5 kbp. The number of errors detected by MetaQUAST ( MQ Errs), number of flagged regions by VALET (Flg), number of flagged regions that overlap an error found by MetaQUAST (Flg Overlap), number of valid misassemblies or flagged regions with multiple misassembly signatures (Vld), number of valid revions that overlap an error found by MetaQUAST (Vld Overlap).\\label{syn_comp_tbl}")
+@
 
-\caption{VALET results for assemblies of the Shakya et al.~\citep{shakya2013comparative} dataset. Reads were assembled using the four provided assemblers. General assembly statistics include length in Mbp (Len), number of contigs (Ctgs), N50 contig size in kbp (N50), N50 of contigs after broken at mis-assemblies in kbp (NA50) and mismatches per  were calculated for contigs \textgreater 5 kbp. The number of errors detected by MetaQUAST ( MQ Errs), number of flagged regions by VALET (Flg), number of flagged regions that overlap an error found by MetaQUAST (Flg Overlap), number of valid misassemblies or flagged regions with multiple misassembly signatures (Vld), number of valid revions that overlap an error found by MetaQUAST (Vld Overlap).\label{syn_comp_tbl}}
-\begin{tabular}{lrrrr}
-\toprule
-Metric & MetaVelvet & SOAPdenovo2 & SPADES & Velvet\\
-\midrule
-Len & 134,157,560 & 150,990,751 & 173,364,620 & 133,773,517\\
-Ctgs & 5,707 & 5,782 & 5,367 & 6,042\\
-N50 & 41,337 & 50,979 & 74,297 & 36,654\\
-NA50 & 38,279 & 45,408 & 62,668 & 33,908\\
-MPK & 45.9 & 41.89 & 92.22 & 47.26\\
-\addlinespace
-MQ Errs & 332 & 472 & 1174 & 327\\
-Flg & 1111 & 1288 & 1551 & 1136\\
-Flg Overlap & 7 & 18 & 45 & 7\\
-Vld & 3 & 3 & 2 & 3\\
-Vld Overlap & 0 & 0 & 0 & 0\\
-\bottomrule
-\end{tabular}
-\end{table}
 
 
 

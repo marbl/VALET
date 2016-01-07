@@ -1,0 +1,38 @@
+Assembly	soapdenovo2.45.asm
+# contigs (>= 0 bp)	29802
+# contigs (>= 1000 bp)	3496
+# contigs (>= 5000 bp)	841
+# contigs (>= 10000 bp)	293
+# contigs (>= 25000 bp)	22
+# contigs (>= 50000 bp)	0
+Total length (>= 0 bp)	18053806
+Total length (>= 1000 bp)	14029902
+Total length (>= 5000 bp)	8317492
+Total length (>= 10000 bp)	4446980
+Total length (>= 25000 bp)	692495
+Total length (>= 50000 bp)	0
+# contigs	841
+Largest contig	46024
+Total length	8317492
+Reference length	16755449
+N50	10424
+N75	7459
+L50	265
+L75	503
+# misassemblies	0
+# misassembled contigs	0
+Misassembled contigs length	0
+# local misassemblies	0
+# structural variations	0
+# unaligned contigs	0 + 0 part
+Unaligned length	0
+Genome fraction (%)	49.614
+Duplication ratio	1.001
+# N's per 100 kbp	0.00
+# mismatches per 100 kbp	58.32
+# indels per 100 kbp	7.87
+Largest alignment	46024
+NA50	10424
+NA75	7459
+LA50	265
+LA75	503

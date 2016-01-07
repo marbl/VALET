@@ -85,5 +85,5 @@ target/
 *.out
 *.synctex.gz
 
-## results directory
+# Example data output
 output/*

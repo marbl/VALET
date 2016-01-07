@@ -1,0 +1,38 @@
+Assembly	metavelvet.45.asm
+# contigs (>= 0 bp)	3104
+# contigs (>= 1000 bp)	861
+# contigs (>= 5000 bp)	312
+# contigs (>= 10000 bp)	245
+# contigs (>= 25000 bp)	150
+# contigs (>= 50000 bp)	67
+Total length (>= 0 bp)	14016604
+Total length (>= 1000 bp)	13187902
+Total length (>= 5000 bp)	12162955
+Total length (>= 10000 bp)	11693136
+Total length (>= 25000 bp)	10150029
+Total length (>= 50000 bp)	7152337
+# contigs	312
+Largest contig	313160
+Total length	12162955
+Reference length	16755449
+N50	67835
+N75	34722
+L50	48
+L75	115
+# misassemblies	1
+# misassembled contigs	1
+Misassembled contigs length	197655
+# local misassemblies	19
+# structural variations	0
+# unaligned contigs	0 + 0 part
+Unaligned length	0
+Genome fraction (%)	72.761
+Duplication ratio	1.000
+# N's per 100 kbp	0.00
+# mismatches per 100 kbp	63.41
+# indels per 100 kbp	9.72
+Largest alignment	313160
+NA50	65716
+NA75	34722
+LA50	49
+LA75	116
