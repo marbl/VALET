@@ -18,6 +18,7 @@ class BreakpointFinder:
         self.bin_contents = {}
         self.inverse_bin_contents = {}
         self.surviving_bins = {}
+        self.fasta_file = False
         self.getOptions()
         self.base_path = os.path.dirname(sys.argv[0])[:-len("/src/py")]
         self.set_locations()
@@ -77,12 +78,15 @@ class BreakpointFinder:
     def run_bowtie_2(self):
         for file_name in os.listdir(self.reads_dir):
             if "reads" in file_name:
+                read_type = "-q"
+                if self.fasta_file:
+                    read_type = "-f"
                 call_arr = [self.bowtie_loc, '-x', self.index_prefix, '-U',\
                          self.reads_dir + file_name,\
                          '-S', self.sam_output_dir + file_name + '.sam',\
                          '--un', self.singleton_dir + file_name + '.singletons',\
-                         '--al', self.conc_dir + file_name + '.reads',
-                         '-q', '-I 50' , '-X 800', '-p', str(self.options.threads), '--mp 6']
+                         '--al', self.conc_dir + file_name + '.reads', read_type,\
+                         '-I 50' , '-X 800', '-p', str(self.options.threads), '--mp 6']
                 #out_cmd(call_arr)
                 call(call_arr)
             else:
@@ -522,6 +526,9 @@ class BreakpointFinder:
                 default="10", type="int")
         parser.add_option("-p", "--threads", dest="threads", \
                 help="Number of threads", default=10, type="int")
+        parser.add_option("-f", "--fasta", dest="fasta_file", \
+                help="Reads are in FASTA format file. (default is FASTQ)",
+                action="store_true", default=False)
         (options, args) = parser.parse_args()
         self.options = options
         if options.reads:
@@ -530,6 +537,8 @@ class BreakpointFinder:
             self.bin_size = options.bin_size
         else:
             self.bin_size = 500
+        if options.fasta_file:
+            self.fasta_file = True
         if not options.assembly_file:
             warning("Did not provide assembly file")
             parser.print_help()

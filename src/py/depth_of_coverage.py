@@ -338,7 +338,7 @@ def tukey_summary(orig_array, window_size = 1):
 
     #array = []
     array = orig_array
-    array = np.convolve(np.array(array), np.ones(window_size)/window_size, mode='valid')
+    array = np.convolve(np.array(array), np.ones(window_size)/window_size, mode='same')
     #array = scipy.signal.medfilt(np.array(orig_array), kernel_size = window_size)
     #spline = UnivariateSpline(range(1,len(orig_array)+1), np.array(orig_array))
     #array = spline(range(1,len(orig_array)+1))

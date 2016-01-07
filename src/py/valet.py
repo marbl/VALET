@@ -51,9 +51,12 @@ def get_options():
                       help="Output directory", default="output")
     parser.add_option("-w", "--window-size", dest="window_size",
                       help="Sliding window size when determining misassemblies.", default="501")
+    parser.add_option("-f", "--fasta", dest="fasta_file",
+                      default=False, action='store_true',
+                      help="if set, input reads are fasta format (by default, reads are FASTQ).")
     parser.add_option("-q", "--fastq", dest="fastq_file",
                       default=False, action='store_true',
-                      help="if set, input reads are fastq format (fasta by default).")
+                      help="if set, input reads are fastq format.")
     parser.add_option("-p", "--threads", dest="threads",
                       help="Number of threads", default="8")
     parser.add_option("-I", "--minins", dest="min_insert_size",
@@ -85,7 +88,7 @@ def get_options():
     parser.add_option('-k', "--breakpoint-bin", dest="breakpoints_bin", default="50", type=str,
                       help="Bin sized used to find breakpoints.")
     parser.add_option(
-        '-f', "--orf-file", dest="orf_file", help="gff formatted file containing orfs")
+        "--orf-file", dest="orf_file", help="gff formatted file containing orfs")
     parser.add_option("--kmer", dest="kmer_length", help="kmer length used for abundance estimation",
                       default="15")
     parser.add_option("--skip-reapr", dest="skip_reapr", default=False, action='store_true')
@@ -105,6 +108,8 @@ def get_options():
 
     if options.first_mates and options.second_mates:
         options.reads_filenames = options.first_mates + ',' + options.second_mates
+    else:
+        options.skip_reapr = True
 
     # Window size must be odd and non-negative.
     if int(options.window_size) < 0 or int(options.window_size) % 2 == 0:
@@ -401,9 +406,9 @@ def run_bowtie2(options, assembly_filename, output_dir, output_sam):
     ensure_dir(unaligned_dir)
     unaligned_file = unaligned_dir + 'unaligned.reads'
 
-    #read_type = " -f "
-    #if options.fastq_file:
     read_type = " -q "
+    if options.fasta_file:
+        read_type = " -f "
 
     bowtie2_args = ""
     bowtie2_unaligned_check_args = ""
@@ -575,13 +580,17 @@ def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir)
     run(call_arr, stderr=std_err_file)
     std_err_file.close()
 
+    read_type = "-q"
+    if options.fasta_file:
+        read_type = "-f"
     std_err_file = open(breakpoint_dir + 'std_err.log','w')
     call_arr = [os.path.join(BASE_PATH, 'src/py/breakpoint_finder.py'),\
             '-a', assembly_filename,\
             '-r', breakpoint_dir + 'split_reads/',\
             '-b', options.breakpoints_bin, '-o', breakpoint_dir,\
             '-c', options.coverage_file,\
-            '-p', options.threads]
+            '-p', options.threads,\
+            read_type]
     run(call_arr, stderr=std_err_file)
 
     breakpoint_bed = breakpoint_dir + '../breakpoints.bed'
