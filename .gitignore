@@ -85,10 +85,5 @@ target/
 *.out
 *.synctex.gz
 
-<<<<<<< HEAD
 # Example data output
-output/
-=======
-## results directory
 output/*
->>>>>>> master
