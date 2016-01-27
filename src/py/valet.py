@@ -364,7 +364,7 @@ def get_contig_lengths(sam_filename):
 
     # Build dictionary of contig lengths.
     contig_lengths = {}
-    pattern = re.compile('SN:(?P<contig>[\w_\|\.\-]+)\s*LN:(?P<length>\d+)')
+    pattern = re.compile('SN:(?P<contig>[\w_\|\.\-|/]+)\s*LN:(?P<length>\d+)')
     line = sam_file.readline()
     while line.startswith("@"):
 
@@ -668,6 +668,11 @@ def bin_reads_by_coverage(options, sam_filename, contig_abundances, output_dir):
     abundance_read_filename = output_dir + '/bins/abun_read'
     ensure_dir(abundance_read_filename)
     abundance_read_file = open(abundance_read_filename, 'w')
+    
+    # log file for read coverage binning
+    abundance_log_filename = output_dir + '/bins/abun_read.log'
+    ensure_dir(abundance_log_filename)
+    abundance_log_file = open(abundance_log_filename, 'w')    
 
     # Skip the header sequence.
     sam_file = open(sam_filename, 'r')
@@ -680,8 +685,19 @@ def bin_reads_by_coverage(options, sam_filename, contig_abundances, output_dir):
     while line:
         tuple = line.split('\t')
 
+        ## check for missing contigs not present on abundance file
+        ## This is potentially due to only a few reads mapping to the contig        
+	##if tuple[2] not in contig_abundances.keys():
+	  #  abundance_log_file.write(tuple[2] + "not in contig abundance file read " +  tuple[0] +  " excluded from coverage and read pair analysis")
+            #line = sam_file.readline()
+	    #continue
+
         if tuple[2] != '*':
-            if int(tuple[1]) & 0x10 == 0:
+	    if tuple[2] not in contig_abundances.keys():
+                abundance_log_file.write(tuple[2] + "not in contig abundance file read " +  tuple[0] +  " excluded from coverage and read pair analysis\n")
+                line = sam_file.readline()
+                continue
+            elif int(tuple[1]) & 0x10 == 0:
                 seq = tuple[9]
                 quals = tuple[10]
             else:
