@@ -614,12 +614,22 @@ def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, outp
     ensure_dir(abundance_contig_filename)
     abundance_contig_file = open(abundance_contig_filename, 'w')
 
+
+    # Contig abundances log file
+    abundance_log_filename = output_dir + '/bins/abun_contig.log'
+    ensure_dir(abundance_log_filename)
+    abundance_log_file = open(abundance_log_filename, 'w')
+
     with open(assembly_filename, 'r') as assembly:
         for contig in contig_reader(assembly):
+            if contig['name'] not in contig_abundances.keys():
+                abundance_log_file.write(contig['name'] + "not in contig abundance file, excluded read pair analysis")
+                continue
             abundance_contig_file.write(str(int(math.ceil(contig_abundances[contig['name'][1:].strip()]))) + '\t' +\
                     contig['name'][1:].strip() + '\t' + ''.join(contig['sequence']).strip() + '\n')
 
     abundance_contig_file.close()
+    abundance_log_file.close()
 
     # Sort the contigs by abundance.
     try:
@@ -649,6 +659,7 @@ def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, outp
         prev_abun = curr_abun
 
     abundance_contig_file.close()
+    abundance_log_file.close()
 
 
 def bin_reads_by_coverage(options, sam_filename, contig_abundances, output_dir):
@@ -1018,7 +1029,7 @@ def generate_summary_table(table_filename, all_contig_lengths, filtered_contig_l
         else:
             print("Unhandled error: " + misassembly[3])
 
-    if prev_contig:
+    if prev_contig and prev_contig in contig_abundances.keys():
         # Output previous contig stats.
         table_file.write(prev_contig + '\t' + str(filtered_contig_lengths[prev_contig]) + '\t' + str(contig_abundances[prev_contig]) + '\t' + \
             str(low_coverage) + '\t' + str(low_coverage_bps) + '\t' + str(high_coverage) + '\t' + \
@@ -1029,7 +1040,7 @@ def generate_summary_table(table_filename, all_contig_lengths, filtered_contig_l
 
     # We need to add the remaining, error-free contigs.
     for contig in filtered_contig_lengths:
-        if contig not in processed_contigs:
+        if contig not in processed_contigs and contig not in filtered_contig_lengths and contig in contig_abundances.keys():
             table_file.write(contig + '\t' + str(filtered_contig_lengths[contig]) + '\t' + str(contig_abundances[contig]) + '\t' + \
                 '0\t0\t0\t0\t0\t0\t0\t0\n')
             processed_contigs.add(contig)
