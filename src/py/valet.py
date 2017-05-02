@@ -10,6 +10,8 @@ import shlex
 import subprocess
 import resource
 import sys
+import subprocess
+from subprocess import Popen, PIPE
 
 BASE_PATH = os.path.dirname(sys.argv[0])[:-len('src/py/')]
 FILE_LIMIT = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
@@ -369,10 +371,14 @@ def get_contig_lengths(sam_filename):
     while line.startswith("@"):
 
         if line.startswith("@SQ"):
-            matches = pattern.search(line)
+            # matches = pattern.search(line)
 
-            if len(matches.groups()) == 2:
-                contig_lengths[matches.group('contig')] = int(matches.group('length'))
+            # if len(matches.groups()) == 2:
+                #contig_lengths[matches.group('contig')] = int(matches.group('length'))
+            row = line.split()
+            contig_name = row[1].split(':')[1]
+            length = int(row[2].split(':')[1])
+            contig_lengths[contig_name] = length
 
         line = sam_file.readline()
 
@@ -584,13 +590,19 @@ def run_breakpoint_finder(options, assembly_filename, unaligned, breakpoint_dir)
     if options.fasta_file:
         read_type = "-f"
     std_err_file = open(breakpoint_dir + 'std_err.log','w')
+    # call_arr = [os.path.join(BASE_PATH, 'src/py/breakpoint_finder.py'),\
+    #         '-a', assembly_filename,\
+    #         '-r', breakpoint_dir + 'split_reads/',\
+    #         '-b', options.breakpoints_bin, '-o', breakpoint_dir,\
+    #         '-c', options.coverage_file,\
+    #         '-p', options.threads,\
+    #         read_type]
     call_arr = [os.path.join(BASE_PATH, 'src/py/breakpoint_finder.py'),\
-            '-a', assembly_filename,\
-            '-r', breakpoint_dir + 'split_reads/',\
-            '-b', options.breakpoints_bin, '-o', breakpoint_dir,\
-            '-c', options.coverage_file,\
-            '-p', options.threads,\
-            read_type]
+                '-a', assembly_filename,\
+                '-r', breakpoint_dir + 'split_reads/',\
+                '-b', options.breakpoints_bin, '-o', breakpoint_dir,\
+                '-c', options.coverage_file,\
+                '-p', options.threads]
     run(call_arr, stderr=std_err_file)
 
     breakpoint_bed = breakpoint_dir + '../breakpoints.bed'
@@ -622,9 +634,12 @@ def bin_assembly_by_coverage(options, assembly_filename, contig_abundances, outp
 
     with open(assembly_filename, 'r') as assembly:
         for contig in contig_reader(assembly):
-            if contig['name'] not in contig_abundances.keys():
-                abundance_log_file.write(contig['name'] + "not in contig abundance file, excluded read pair analysis")
-                continue
+            '''
+            COMMENTED NATE's ISSUE
+            '''
+            # if contig['name'] not in contig_abundances.keys():
+            #     abundance_log_file.write(contig['name'] + "not in contig abundance file, excluded read pair analysis")
+            #     continue
             abundance_contig_file.write(str(int(math.ceil(contig_abundances[contig['name'][1:].strip()]))) + '\t' +\
                     contig['name'][1:].strip() + '\t' + ''.join(contig['sequence']).strip() + '\n')
 
@@ -1145,6 +1160,7 @@ def contig_reader(fasta_file):
 def run(command, stdout=sys.stdout, stderr=sys.stderr):
     """ Run the command.
     """
+    #print('here!!')
 
     if COMMANDS_FILE:
         if stdout != sys.stdout:
@@ -1159,7 +1175,14 @@ def run(command, stdout=sys.stdout, stderr=sys.stderr):
         COMMANDS_FILE.flush()
     print(BColors.OKBLUE + "COMMAND:\t" + BColors.ENDC, ' '.join(command), file=sys.stderr)
 
-    call(command, stdout=stdout, stderr=stderr)
+    try:
+        subprocess.check_call(command, stdout=stdout, stderr=stderr)
+        #p = subprocess.check_output(command,shell=True)
+    except subprocess.CalledProcessError as err:
+        print(err)
+        print(err.output)
+        sys.exit(1)
+
 
 
 def line(x):
