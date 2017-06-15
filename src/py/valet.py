@@ -521,7 +521,7 @@ def run_samtools(options, assembly_filename, output_dir, sam_output_location, wi
     call_arr = ["samtools", "view", "-F", "0x100", "-bS", sam_output_location]
     run(call_arr, bam_fp, error_fp)
 
-    call_arr = ["samtools", "sort", "-@ 16", "-o", sorted_bam_location, bam_location]
+    call_arr = ["samtools", "sort", "-@ 16", "-o", sorted_bam_location+".bam", bam_location]
     run(call_arr, stderr=FNULL)
 
     coverage_file_dir = output_dir + "/coverage/"
