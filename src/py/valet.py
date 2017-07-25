@@ -94,10 +94,13 @@ def get_options():
     parser.add_option("--kmer", dest="kmer_length", help="kmer length used for abundance estimation",
                       default="15")
     parser.add_option("--skip-reapr", dest="skip_reapr", default=False, action='store_true')
+    parser.add_option("--debug", dest="debug", default=False, action='store_true')
 
     (options, args) = parser.parse_args()
 
     should_err = False
+    if not options.debug:
+	sys.tracebacklimit = 0 
     if not options.assembly_filenames:
         error("You need to provide a fasta file with -a")
         should_err = True
@@ -145,7 +148,7 @@ def main():
 
         # Create the assembly output directory.
         output_dir = options.output_dir + '/' + assembly_name
-        assert not os.path.isdir(output_dir), "Directory: %s exists, either provide new assembly name or delete directory." % d
+        assert not os.path.isdir(output_dir), "Directory: %s exists, either provide new assembly name or delete directory." % output_dir
         ensure_dir(output_dir)
 
         bold("PROCESSING ASSEMBLY: " + str(assembly_name) + ' (' + assembly + ')')
