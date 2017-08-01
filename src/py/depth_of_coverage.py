@@ -347,9 +347,10 @@ def tukey_summary(orig_array, window_size = 1):
     array.sort()
     #print(len(array))
 
-    median = array[len(array) / 2]
     if not len(array) % 2:
         median = (array[len(array) / 2] + array[len(array) / 2 - 1]) / 2.0
+    else:
+        median = array[len(array) / 2]
 
     first_quantile = array[len(array) / 4]
     third_quantile = array[3 * len(array) / 4]
