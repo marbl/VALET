@@ -476,8 +476,8 @@ class BreakpointFinder:
                                     #warning("Not outputting because unaligned")
                                     should_output = False
                                 elif should_output\
-                                        and (line_components[4] < len(line_components[10]))\
-                                        and ((contig_length - line_components[4]) < len(line_components[10])):
+                                        and (int(line_components[4]) < len(line_components[10]))\
+                                        and ((contig_length - int(line_components[4])) < len(line_components[10])):
                                             should_output = False
                                             warning("Not outputting because close to ends")
                                 #elif should_output and line_components[4] <= float(contig_length)/self.options.end_trim or (line_components[4] >= contig_length - (float(contig_length)/self.options.end_trim)):
