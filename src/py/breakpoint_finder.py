@@ -246,22 +246,8 @@ class BreakpointFinder:
                                 continue
                             out_file.write("%s\t%d\t%d\tBreakpoint_finder\n"\
                                     % (split_line[1],\
-                                    int(split_line[2])-1,\
-                                    int(split_line[2])+self.bin_size-1))
-                            # out_file.write("%s\tBreakpoint_finder"\
-                            #         "\tBreakpoint_Finder_excessive_alignment"\
-                            #         "\t%d\t%d\t%d\t.\t.\t"\
-                            #         "singletons_aligned_in_bin=%f;color=%s"\
-                            #         "number_of_sisters=%d;reciprocal=%s\n"\
-                            #         %(split_line[1],\
-                            #         int(split_line[2]),\
-                            #         int(split_line[2])+self.bin_size-1,\
-                            #         int(split_line[0]),\
-                            #         float(split_line[0]),\
-                            #         color,\
-                            #         num_sisters,\
-                            #         str(rec)))
-
+                                    int(float(split_line[2]))-1,\
+                                    int(float(split_line[2]))+self.bin_size-1))
 
 
 
