@@ -8,7 +8,6 @@
 #    do the results change?
 #  - Can you see things better in log space?
 
-#setwd("~/Documents/valet_results/")
 setwd("./")
 
 # Reading the summary file
@@ -27,8 +26,8 @@ setwd("./")
 #col_nums = c(7)
 
 #col_list = list(c(2,4,6,8), c(3,5,7,9), c(2,4), c(3,5), 6, 7, 8, 9)
-col_list = list(c(3,5,7,9), c(4,6,8,10), c(3,5), c(4,6), 7, 8, 9, 10)
-titles = list("All Errors", "All Error (BPs)", "High/Low Coverage Errors", "High/Low Coverage Errors (BPs)", "Insert Size Errors", "Insert Size Errors (BPs)", "Breakpoint Errors", "Breakpoint Errors (BPs)")
+col_list = list(c(3,5,7,9), c(4,6,8,10), 3, 4, 5, 6, 7, 8, 9, 10)
+titles = list("All Errors", "All Errors (BPs)", "Low Coverage Errors", "Low Coverage Errors (BPs)", "High Coverage Errors", "High Coverage Errors (BPs)", "Insert Size Errors", "Insert Size Errors (BPs)", "Breakpoint Errors", "Breakpoint Errors (BPs)")
 
 args <- commandArgs(TRUE)
 assemblies <- strsplit(args[1], ",")
@@ -59,10 +58,7 @@ for (col_nums in col_list) {
   print(col_nums)
   xrange <- 10
   yrange <- 10
-  #assemblies <- c("30_genomes_ray31.tsv", "30_genomes_spades.tsv", "30_genomes_ray51.tsv", "30_genomes_ray71.tsv", "30_genomes_soapdenovo2.tsv", "30_genomes_idba.tsv")
   for (assembly in assemblies[[1]]) {
-    #assembly = "30_genomes_ray31.tsv"
-    #assembly_stats = list()
     summary = read.csv(assembly, head=T, row.names=1, sep="\t", check.names=F)
     errors = summary[,col_nums]
 
